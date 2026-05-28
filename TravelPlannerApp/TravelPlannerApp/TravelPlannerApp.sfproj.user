@@ -2,8 +2,8 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationUrl />
-    <LastServiceLocation />
     <IsStartupProjectCheckComplete>true</IsStartupProjectCheckComplete>
-    <LaunchTarget>..\BackendAPIService\BackendAPIService.csproj</LaunchTarget>
+    <LaunchTarget>..\WebApiService\WebApiService.csproj</LaunchTarget>
+    <LastServiceLocation />
   </PropertyGroup>
 </Project>

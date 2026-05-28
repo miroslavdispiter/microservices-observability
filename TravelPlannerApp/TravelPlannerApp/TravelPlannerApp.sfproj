@@ -2,7 +2,7 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.VisualStudio.Azure.Fabric.MSBuild.1.7.9\build\Microsoft.VisualStudio.Azure.Fabric.Application.props" Condition="Exists('..\packages\Microsoft.VisualStudio.Azure.Fabric.MSBuild.1.7.9\build\Microsoft.VisualStudio.Azure.Fabric.Application.props')" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>62fcb47b-a5a5-415d-aa80-8e4ba3724a6b</ProjectGuid>
+    <ProjectGuid>91383ef3-2d65-40fb-82bb-3eb25b550ba4</ProjectGuid>
     <ProjectVersion>2.7</ProjectVersion>
     <MinToolsVersion>16.10</MinToolsVersion>
     <SupportedMSBuildNuGetPackageVersion>1.7.9</SupportedMSBuildNuGetPackageVersion>
@@ -36,13 +36,10 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BackendAPIService\BackendAPIService.csproj">
+    <ProjectReference Include="..\UserService\UserService.csproj" />
+    <ProjectReference Include="..\WebApiService\WebApiService.csproj">
       <ServiceLaunchUrl>http://localhost:{ServicePort}/swagger</ServiceLaunchUrl>
     </ProjectReference>
-    <ProjectReference Include="..\FinanceService\FinanceService.csproj" />
-    <ProjectReference Include="..\TravelService\TravelService.csproj" />
-    <ProjectReference Include="..\UserService\UserService.csproj" />
-    <ProjectReference Include="..\ValidatorService\ValidatorService.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
   <PropertyGroup>
