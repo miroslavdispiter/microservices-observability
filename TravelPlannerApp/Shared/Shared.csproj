@@ -105,10 +105,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\ServiceResult.cs" />
+    <Compile Include="DTOs\TravelPlan\CreateTravelPlanDto.cs" />
+    <Compile Include="DTOs\TravelPlan\TravelPlanDto.cs" />
     <Compile Include="DTOs\User\AuthResponseDto.cs" />
     <Compile Include="DTOs\User\LoginRequestDto.cs" />
     <Compile Include="DTOs\User\RegisterRequestDto.cs" />
     <Compile Include="Enums\UserRole.cs" />
+    <Compile Include="Interfaces\ITravelService.cs" />
     <Compile Include="Interfaces\IUserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
