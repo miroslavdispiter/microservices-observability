@@ -5,16 +5,18 @@ using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using Shared.Common;
+using Shared.DTOs.Destination;
 using Shared.DTOs.TravelPlan;
 using Shared.Interfaces;
 using System.Fabric;
 using TravelService.DbContext;
+using TravelService.Interfaces;
 using TravelService.Repositories;
 using TravelService.Services;
 
 namespace TravelService
 {
-    internal sealed class TravelService : StatelessService, ITravelService
+    internal sealed class TravelService : StatelessService, ITravelService, IDestinationService
     {
         private readonly ServiceProvider _serviceProvider;
 
@@ -38,10 +40,19 @@ namespace TravelService
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<ITravelPlanRepository, TravelPlanRepository>();
+
+            // Register repositories
+            services.AddScoped<ITravelPlanRepository, TravelPlanRepository>();
+            services.AddScoped<IDestinationRepository, DestinationRepository>();
+
+            // Register business logic services
             services.AddScoped<ITravelService, TravelPlanImplementation>();
+            services.AddScoped<IDestinationService, DestinationImplementation>();
 
             _serviceProvider = services.BuildServiceProvider();
         }
+
+        #region TravelPlan
 
         public async Task<ServiceResult<TravelPlanDto>> Create(int userId, CreateTravelPlanDto dto)
         {
@@ -87,6 +98,56 @@ namespace TravelService
                 return await service.Delete(id);
             }
         }
+
+        #endregion
+
+        #region Destination
+        public async Task<ServiceResult<DestinationDto>> CreateDestination(int travelPlanId, CreateDestinationDto dto)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IDestinationService>();
+                return await service.CreateDestination(travelPlanId, dto);
+            }
+        }
+
+        public async Task<ServiceResult<List<DestinationDto>>> GetAllDestinations(int travelPlanId)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IDestinationService>();
+                return await service.GetAllDestinations(travelPlanId);
+            }
+        }
+
+        public async Task<ServiceResult<DestinationDto>> GetDestinationById(int id)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IDestinationService>();
+                return await service.GetDestinationById(id);
+            }
+        }
+
+        public async Task<ServiceResult<bool>> UpdateDestination(int id, CreateDestinationDto dto)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IDestinationService>();
+                return await service.UpdateDestination(id, dto);
+            }
+        }
+
+        public async Task<ServiceResult<bool>> DeleteDestination(int id)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IDestinationService>();
+                return await service.DeleteDestination(id);
+            }
+        }
+
+        #endregion
 
         protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
         {

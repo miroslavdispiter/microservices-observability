@@ -2,7 +2,6 @@
 using Shared.DTOs.TravelPlan;
 using Shared.Interfaces;
 using TravelService.Models;
-using TravelService.Repositories;
 
 namespace TravelService.Services
 {

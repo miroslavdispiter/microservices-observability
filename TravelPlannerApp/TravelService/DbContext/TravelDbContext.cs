@@ -9,6 +9,7 @@ namespace TravelService.DbContext
             : base(options) { }
 
         public DbSet<TravelPlan> TravelPlans { get; set; }
+        public DbSet<Destination> Destinations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,6 +43,41 @@ namespace TravelService.DbContext
 
                 entity.Property(e => e.CreatedAt)
                     .IsRequired();
+            });
+
+            modelBuilder.Entity<Destination>(entity =>
+            {
+                entity.ToTable("Destinations");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.TravelPlanId)
+                    .IsRequired();
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.Location)
+                    .IsRequired()
+                    .HasMaxLength(300);
+
+                entity.Property(e => e.ArrivalDate)
+                    .IsRequired();
+
+                entity.Property(e => e.DepartureDate)
+                    .IsRequired();
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.CreatedAt)
+                    .IsRequired();
+
+                entity.HasOne(d => d.TravelPlan)
+                    .WithMany()
+                    .HasForeignKey(d => d.TravelPlanId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
