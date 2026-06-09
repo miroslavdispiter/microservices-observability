@@ -7,6 +7,7 @@ using Microsoft.ServiceFabric.Services.Runtime;
 using Shared.Common;
 using Shared.DTOs.Activity;
 using Shared.DTOs.Destination;
+using Shared.DTOs.Expense;
 using Shared.DTOs.TravelPlan;
 using Shared.Interfaces;
 using System.Fabric;
@@ -17,7 +18,7 @@ using TravelService.Services;
 
 namespace TravelService
 {
-    internal sealed class TravelService : StatelessService, ITravelService, IDestinationService, IActivityService
+    internal sealed class TravelService : StatelessService, ITravelService, IDestinationService, IActivityService, IExpenseService
     {
         private readonly ServiceProvider _serviceProvider;
 
@@ -46,11 +47,13 @@ namespace TravelService
             services.AddScoped<ITravelPlanRepository, TravelPlanRepository>();
             services.AddScoped<IDestinationRepository, DestinationRepository>();
             services.AddScoped<IActivityRepository, ActivityRepository>();
+            services.AddScoped<IExpenseRepository, ExpenseRepository>();
 
             // Register business logic services
             services.AddScoped<ITravelService, TravelPlanImplementation>();
             services.AddScoped<IDestinationService, DestinationImplementation>();
             services.AddScoped<IActivityService, ActivityImplementation>();
+            services.AddScoped<IExpenseService, ExpenseImplementation>();
 
             _serviceProvider = services.BuildServiceProvider();
         }
@@ -214,6 +217,73 @@ namespace TravelService
             {
                 var service = scope.ServiceProvider.GetRequiredService<IActivityService>();
                 return await service.DeleteActivity(id);
+            }
+        }
+
+        #endregion
+
+        #region Expense
+
+        public async Task<ServiceResult<ExpenseDto>> CreateExpense(int travelPlanId, CreateExpenseDto dto)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IExpenseService>();
+                return await service.CreateExpense(travelPlanId, dto);
+            }
+        }
+
+        public async Task<ServiceResult<List<ExpenseDto>>> GetAllExpenses(int travelPlanId)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IExpenseService>();
+                return await service.GetAllExpenses(travelPlanId);
+            }
+        }
+
+        public async Task<ServiceResult<List<ExpenseDto>>> GetExpensesByCategory(int travelPlanId, int category)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IExpenseService>();
+                return await service.GetExpensesByCategory(travelPlanId, category);
+            }
+        }
+
+        public async Task<ServiceResult<ExpenseDto>> GetExpenseById(int id)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IExpenseService>();
+                return await service.GetExpenseById(id);
+            }
+        }
+
+        public async Task<ServiceResult<bool>> UpdateExpense(int id, CreateExpenseDto dto)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IExpenseService>();
+                return await service.UpdateExpense(id, dto);
+            }
+        }
+
+        public async Task<ServiceResult<bool>> DeleteExpense(int id)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IExpenseService>();
+                return await service.DeleteExpense(id);
+            }
+        }
+
+        public async Task<ServiceResult<BudgetSummaryDto>> GetBudgetSummary(int travelPlanId)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IExpenseService>();
+                return await service.GetBudgetSummary(travelPlanId);
             }
         }
 

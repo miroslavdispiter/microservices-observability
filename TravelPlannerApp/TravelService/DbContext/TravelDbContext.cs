@@ -11,6 +11,7 @@ namespace TravelService.DbContext
         public DbSet<TravelPlan> TravelPlans { get; set; }
         public DbSet<Destination> Destinations { get; set; }
         public DbSet<Activity> Activities { get; set; }
+        public DbSet<Expense> Expenses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -120,6 +121,42 @@ namespace TravelService.DbContext
                 entity.HasOne(a => a.TravelPlan)
                     .WithMany()
                     .HasForeignKey(a => a.TravelPlanId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Db - Expenses
+            modelBuilder.Entity<Expense>(entity =>
+            {
+                entity.ToTable("Expenses");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.TravelPlanId)
+                    .IsRequired();
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.Category)
+                    .IsRequired();
+
+                entity.Property(e => e.Amount)
+                    .HasColumnType("decimal(18,2)")
+                    .IsRequired();
+
+                entity.Property(e => e.Date)
+                    .IsRequired();
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.CreatedAt)
+                    .IsRequired();
+
+                entity.HasOne(e => e.TravelPlan)
+                    .WithMany()
+                    .HasForeignKey(e => e.TravelPlanId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }
