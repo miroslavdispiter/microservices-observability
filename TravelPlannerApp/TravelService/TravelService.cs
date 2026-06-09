@@ -5,6 +5,7 @@ using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using Shared.Common;
+using Shared.DTOs.Activity;
 using Shared.DTOs.Destination;
 using Shared.DTOs.TravelPlan;
 using Shared.Interfaces;
@@ -16,7 +17,7 @@ using TravelService.Services;
 
 namespace TravelService
 {
-    internal sealed class TravelService : StatelessService, ITravelService, IDestinationService
+    internal sealed class TravelService : StatelessService, ITravelService, IDestinationService, IActivityService
     {
         private readonly ServiceProvider _serviceProvider;
 
@@ -44,10 +45,12 @@ namespace TravelService
             // Register repositories
             services.AddScoped<ITravelPlanRepository, TravelPlanRepository>();
             services.AddScoped<IDestinationRepository, DestinationRepository>();
+            services.AddScoped<IActivityRepository, ActivityRepository>();
 
             // Register business logic services
             services.AddScoped<ITravelService, TravelPlanImplementation>();
             services.AddScoped<IDestinationService, DestinationImplementation>();
+            services.AddScoped<IActivityService, ActivityImplementation>();
 
             _serviceProvider = services.BuildServiceProvider();
         }
@@ -144,6 +147,73 @@ namespace TravelService
             {
                 var service = scope.ServiceProvider.GetRequiredService<IDestinationService>();
                 return await service.DeleteDestination(id);
+            }
+        }
+
+        #endregion
+
+        #region Activity
+
+        public async Task<ServiceResult<ActivityDto>> CreateActivity(int travelPlanId, CreateActivityDto dto)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IActivityService>();
+                return await service.CreateActivity(travelPlanId, dto);
+            }
+        }
+
+        public async Task<ServiceResult<List<ActivityDto>>> GetAllActivities(int travelPlanId)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IActivityService>();
+                return await service.GetAllActivities(travelPlanId);
+            }
+        }
+
+        public async Task<ServiceResult<List<ActivityDto>>> GetActivitiesByDate(int travelPlanId, DateTime date)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IActivityService>();
+                return await service.GetActivitiesByDate(travelPlanId, date);
+            }
+        }
+
+        public async Task<ServiceResult<List<ActivityDto>>> GetActivitiesInRange(int travelPlanId, DateTime startDate, DateTime endDate)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IActivityService>();
+                return await service.GetActivitiesInRange(travelPlanId, startDate, endDate);
+            }
+        }
+
+        public async Task<ServiceResult<ActivityDto>> GetActivityById(int id)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IActivityService>();
+                return await service.GetActivityById(id);
+            }
+        }
+
+        public async Task<ServiceResult<bool>> UpdateActivity(int id, CreateActivityDto dto)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IActivityService>();
+                return await service.UpdateActivity(id, dto);
+            }
+        }
+
+        public async Task<ServiceResult<bool>> DeleteActivity(int id)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IActivityService>();
+                return await service.DeleteActivity(id);
             }
         }
 

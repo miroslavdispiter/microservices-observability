@@ -10,6 +10,7 @@
       "TravelService/1.0.0": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "8.0.27",
+          "Microsoft.EntityFrameworkCore.Design": "8.0.27",
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.27",
           "Microsoft.EntityFrameworkCore.Tools": "8.0.27",
           "Microsoft.Extensions.Configuration": "10.0.8",

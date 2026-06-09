@@ -105,6 +105,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\ServiceResult.cs" />
+    <Compile Include="DTOs\Activity\ActivityDto.cs" />
+    <Compile Include="DTOs\Activity\CreateActivityDto.cs" />
     <Compile Include="DTOs\Destination\CreateDestinationDto.cs" />
     <Compile Include="DTOs\Destination\DestinationDto.cs" />
     <Compile Include="DTOs\TravelPlan\CreateTravelPlanDto.cs" />
@@ -112,7 +114,9 @@
     <Compile Include="DTOs\User\AuthResponseDto.cs" />
     <Compile Include="DTOs\User\LoginRequestDto.cs" />
     <Compile Include="DTOs\User\RegisterRequestDto.cs" />
+    <Compile Include="Enums\ActivityStatus.cs" />
     <Compile Include="Enums\UserRole.cs" />
+    <Compile Include="Interfaces\IActivityService.cs" />
     <Compile Include="Interfaces\IDestinationService.cs" />
     <Compile Include="Interfaces\ITravelService.cs" />
     <Compile Include="Interfaces\IUserService.cs" />

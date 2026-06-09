@@ -18,6 +18,7 @@ namespace UserService.DbContext
 
             modelBuilder.Entity<User>(entity =>
             {
+                // UsersDb - Users
                 entity.ToTable("Users");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();

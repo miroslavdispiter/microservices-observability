@@ -21,16 +21,13 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<DestinationDto>> CreateDestination(int travelPlanId, CreateDestinationDto dto)
         {
-            // Check if travel plan exists
             var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<DestinationDto>.FailureResult("Travel plan not found.");
 
-            // Validate dates
             if (dto.DepartureDate < dto.ArrivalDate)
                 return ServiceResult<DestinationDto>.FailureResult("Departure date cannot be before arrival date.");
 
-            // Validate that destination dates are within travel plan dates
             if (dto.ArrivalDate < travelPlan.StartDate || dto.DepartureDate > travelPlan.EndDate)
                 return ServiceResult<DestinationDto>.FailureResult("Destination dates must be within travel plan dates.");
 
@@ -61,7 +58,6 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<List<DestinationDto>>> GetAllDestinations(int travelPlanId)
         {
-            // Check if travel plan exists
             var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<List<DestinationDto>>.FailureResult("Travel plan not found.");
@@ -108,14 +104,11 @@ namespace TravelService.Services
             if (destination == null)
                 return ServiceResult<bool>.FailureResult("Destination not found.");
 
-            // Get travel plan to validate dates
             var travelPlan = await _travelPlanRepo.GetById(destination.TravelPlanId);
 
-            // Validate dates
             if (dto.DepartureDate < dto.ArrivalDate)
                 return ServiceResult<bool>.FailureResult("Departure date cannot be before arrival date.");
 
-            // Validate that destination dates are within travel plan dates
             if (dto.ArrivalDate < travelPlan.StartDate || dto.DepartureDate > travelPlan.EndDate)
                 return ServiceResult<bool>.FailureResult("Destination dates must be within travel plan dates.");
 

@@ -10,9 +10,11 @@ namespace TravelService.DbContext
 
         public DbSet<TravelPlan> TravelPlans { get; set; }
         public DbSet<Destination> Destinations { get; set; }
+        public DbSet<Activity> Activities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Db - TravelPlan
             modelBuilder.Entity<TravelPlan>(entity =>
             {
                 entity.ToTable("TravelPlans");
@@ -45,6 +47,7 @@ namespace TravelService.DbContext
                     .IsRequired();
             });
 
+            // Db - Destination
             modelBuilder.Entity<Destination>(entity =>
             {
                 entity.ToTable("Destinations");
@@ -77,6 +80,46 @@ namespace TravelService.DbContext
                 entity.HasOne(d => d.TravelPlan)
                     .WithMany()
                     .HasForeignKey(d => d.TravelPlanId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Db - Activities
+            modelBuilder.Entity<Activity>(entity =>
+            {
+                entity.ToTable("Activities");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.TravelPlanId)
+                    .IsRequired();
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.Date)
+                    .IsRequired();
+
+                entity.Property(e => e.Time);
+
+                entity.Property(e => e.Location)
+                    .HasMaxLength(300);
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.EstimatedCost)
+                    .HasColumnType("decimal(18,2)");
+
+                entity.Property(e => e.Status)
+                    .IsRequired();
+
+                entity.Property(e => e.CreatedAt)
+                    .IsRequired();
+
+                entity.HasOne(a => a.TravelPlan)
+                    .WithMany()
+                    .HasForeignKey(a => a.TravelPlanId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }
