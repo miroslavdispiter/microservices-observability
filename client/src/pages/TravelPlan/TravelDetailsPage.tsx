@@ -2,18 +2,23 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { travelApi } from "../../api/travelPlan/TravelPlanAPIService";
 import { destinationApi } from "../../api/destination/DestinationAPIService";
+import { activityApi } from "../../api/activity/ActivityAPIService";
 import { Navbar } from "../../components/Navbar";
 import { DestinationOverview } from "../../components/destination/DestinationOverview";
+import { ActivityOverview } from "../../components/activity/ActivityOverview";
 import type { TravelPlan } from "../../models/travel/TravelPlan";
 import type { Destination } from "../../models/travel/Destination";
+import type { Activity } from "../../models/travel/Activity";
 
 export const TravelDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [plan, setPlan] = useState<TravelPlan | null>(null);
   const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDestinationsLoading, setIsDestinationsLoading] = useState(false);
+  const [isActivitiesLoading, setIsActivitiesLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -23,6 +28,7 @@ export const TravelDetailsPage = () => {
   useEffect(() => {
     if (plan) {
       loadDestinations();
+      loadActivities();
     }
   }, [plan]);
 
@@ -55,6 +61,20 @@ export const TravelDetailsPage = () => {
     }
   };
 
+  const loadActivities = async () => {
+    if (!id) return;
+
+    try {
+      setIsActivitiesLoading(true);
+      const data = await activityApi.getAll(parseInt(id));
+      setActivities(data);
+    } catch (err: any) {
+      console.error("Failed to load activities:", err);
+    } finally {
+      setIsActivitiesLoading(false);
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", {
       weekday: "long",
@@ -75,7 +95,7 @@ export const TravelDetailsPage = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-100">
-        <Navbar />
+        <Navbar activeTravelPlanId={parseInt(id!)} />
         <div className="flex justify-center items-center py-20">
           <svg
             className="animate-spin h-12 w-12 text-indigo-500"
@@ -104,7 +124,7 @@ export const TravelDetailsPage = () => {
   if (error || !plan) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-100">
-        <Navbar />
+        <Navbar activeTravelPlanId={parseInt(id!)} />
         <div className="max-w-4xl mx-auto px-4 py-20 text-center">
           <div className="text-6xl mb-4">😕</div>
           <h2 className="text-2xl font-bold text-gray-700 mb-4">
@@ -127,7 +147,7 @@ export const TravelDetailsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-100">
-      <Navbar />
+      <Navbar activeTravelPlanId={parseInt(id!)} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
@@ -272,7 +292,7 @@ export const TravelDetailsPage = () => {
                 </p>
               </div>
 
-              {/* Activities Placeholder */}
+              {/* Activities Count */}
               <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 border-2 border-indigo-200">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center">
@@ -294,8 +314,9 @@ export const TravelDetailsPage = () => {
                     Activities
                   </h3>
                 </div>
-                <p className="text-3xl font-bold text-indigo-600">0</p>
-                <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+                <p className="text-3xl font-bold text-indigo-600">
+                  {activities.length}
+                </p>
               </div>
             </div>
 
@@ -393,7 +414,7 @@ export const TravelDetailsPage = () => {
             </div>
           </div>
 
-          {/* Activities Section (Placeholder) */}
+          {/* Activities Section */}
           <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl border border-indigo-100 overflow-hidden">
             <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 py-5">
               <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -417,15 +438,11 @@ export const TravelDetailsPage = () => {
               </p>
             </div>
             <div className="p-6">
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">🎯</div>
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  Activities Coming Soon
-                </h3>
-                <p className="text-gray-500">
-                  Plan your daily activities and schedule
-                </p>
-              </div>
+              <ActivityOverview
+                activities={activities}
+                travelPlanId={parseInt(id!)}
+                isLoading={isActivitiesLoading}
+              />
             </div>
           </div>
 
@@ -484,9 +501,7 @@ export const TravelDetailsPage = () => {
                 </svg>
                 Packing List
               </h2>
-              <p className="text-white/80 text-sm mt-1">
-                What to bring
-              </p>
+              <p className="text-white/80 text-sm mt-1">What to bring</p>
             </div>
             <div className="p-6">
               <div className="text-center py-12">
@@ -494,9 +509,7 @@ export const TravelDetailsPage = () => {
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">
                   Packing List Coming Soon
                 </h3>
-                <p className="text-gray-500">
-                  Create your packing checklist
-                </p>
+                <p className="text-gray-500">Create your packing checklist</p>
               </div>
             </div>
           </div>

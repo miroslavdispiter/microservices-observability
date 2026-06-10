@@ -97,7 +97,7 @@ export const DestinationsPage = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-100">
-        <Navbar />
+        <Navbar activeTravelPlanId={parseInt(id!)} />
         <div className="flex justify-center items-center py-20">
           <svg
             className="animate-spin h-12 w-12 text-teal-500"
@@ -126,7 +126,7 @@ export const DestinationsPage = () => {
   if (error && !plan) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-100">
-        <Navbar />
+        <Navbar activeTravelPlanId={parseInt(id!)} />
         <div className="max-w-4xl mx-auto px-4 py-20 text-center">
           <div className="text-6xl mb-4">😕</div>
           <h2 className="text-2xl font-bold text-gray-700 mb-4">
@@ -147,7 +147,7 @@ export const DestinationsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-100">
-      <Navbar />
+      <Navbar activeTravelPlanId={parseInt(id!)} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb Navigation */}

@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { TravelsPage } from "./pages/travelPlan/TravelsPage";
 import { TravelDetailsPage } from "./pages/travelPlan/TravelDetailsPage";
 import { DestinationsPage } from "./pages/destination/DestinationsPage";
+import { ActivitiesPage } from "./pages/activity/ActivitiesPage";
 
 const AdminDashboard = () => (
   <div className="p-8">
@@ -39,6 +40,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <DestinationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/travels/:id/activities"
+        element={
+          <ProtectedRoute>
+            <ActivitiesPage />
           </ProtectedRoute>
         }
       />
