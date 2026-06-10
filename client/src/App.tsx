@@ -4,6 +4,7 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { TravelsPage } from "./pages/travelPlan/TravelsPage";
 import { TravelDetailsPage } from "./pages/travelPlan/TravelDetailsPage";
+import { DestinationsPage } from "./pages/destination/DestinationsPage";
 
 const AdminDashboard = () => (
   <div className="p-8">
@@ -30,6 +31,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <TravelDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/travels/:id/destinations"
+        element={
+          <ProtectedRoute>
+            <DestinationsPage />
           </ProtectedRoute>
         }
       />
