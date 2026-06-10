@@ -1,10 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import { LoginPage } from "./pages/LoginPage";
-import { RegisterPage } from "./pages/RegisterPage";
-import { TravelsPage } from "./pages/TravelPlan/TravelsPage";
-import { TravelDetailsPage } from "./pages/TravelPlan/TravelDetailsPage";
+import { Routes, Route, Navigate } from "react-router-dom";
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { TravelsPage } from "./pages/travelPlan/TravelsPage";
+import { TravelDetailsPage } from "./pages/travelPlan/TravelDetailsPage";
 
 const AdminDashboard = () => (
   <div className="p-8">
@@ -12,49 +11,39 @@ const AdminDashboard = () => (
   </div>
 );
 
-function App() {
+export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
-          {/* Protected Routes - User */}
-          <Route
-            path="/travels"
-            element={
-              <ProtectedRoute>
-                <TravelsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/travels/:id"
-            element={
-              <ProtectedRoute>
-                <TravelDetailsPage />
-              </ProtectedRoute>
-            }
-          />
+      <Route
+        path="/travels"
+        element={
+          <ProtectedRoute>
+            <TravelsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/travels/:id"
+        element={
+          <ProtectedRoute>
+            <TravelDetailsPage />
+          </ProtectedRoute>
+        }
+      />
 
-          {/* Protected Routes - Admin */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute requiredRole="Admin">
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute requiredRole="Admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
   );
 }
-
-export default App;

@@ -1,14 +1,20 @@
 import { useState, useEffect } from "react";
-import type { TravelPlan, CreateTravelPlanDto } from "../../types/TravelTypes";
+import type { TravelPlan } from "../../models/travel/TravelPlan";
+import type { CreateTravelPlanDto } from "../../dtos/travelPlan/CreateTravelPlanDto";
 
-interface Props {
+interface TravelPlanModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CreateTravelPlanDto) => Promise<void>;
   editingPlan?: TravelPlan | null;
 }
 
-export const TravelPlanModal = ({ isOpen, onClose, onSubmit, editingPlan }: Props) => {
+export const TravelPlanModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  editingPlan,
+}: TravelPlanModalProps) => {
   const [form, setForm] = useState<CreateTravelPlanDto>({
     title: "",
     description: "",
@@ -109,7 +115,11 @@ export const TravelPlanModal = ({ isOpen, onClose, onSubmit, editingPlan }: Prop
                          focus:border-indigo-500 outline-none transition-colors"
               placeholder="e.g., Summer Trip to Europe"
             />
-            <span className={`${errorClass} ${submitted && errors.title ? "text-red-500" : "text-transparent"}`}>
+            <span
+              className={`${errorClass} ${
+                submitted && errors.title ? "text-red-500" : "text-transparent"
+              }`}
+            >
               {errors.title || "\u200b"}
             </span>
           </div>
@@ -144,7 +154,13 @@ export const TravelPlanModal = ({ isOpen, onClose, onSubmit, editingPlan }: Prop
                 className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl
                            focus:border-violet-500 outline-none transition-colors"
               />
-              <span className={`${errorClass} ${submitted && errors.startDate ? "text-red-500" : "text-transparent"}`}>
+              <span
+                className={`${errorClass} ${
+                  submitted && errors.startDate
+                    ? "text-red-500"
+                    : "text-transparent"
+                }`}
+              >
                 {errors.startDate || "\u200b"}
               </span>
             </div>
@@ -161,7 +177,13 @@ export const TravelPlanModal = ({ isOpen, onClose, onSubmit, editingPlan }: Prop
                 className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl
                            focus:border-violet-500 outline-none transition-colors"
               />
-              <span className={`${errorClass} ${submitted && errors.endDate ? "text-red-500" : "text-transparent"}`}>
+              <span
+                className={`${errorClass} ${
+                  submitted && errors.endDate
+                    ? "text-red-500"
+                    : "text-transparent"
+                }`}
+              >
                 {errors.endDate || "\u200b"}
               </span>
             </div>
@@ -173,7 +195,9 @@ export const TravelPlanModal = ({ isOpen, onClose, onSubmit, editingPlan }: Prop
               Budget
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">€</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                €
+              </span>
               <input
                 name="budget"
                 type="number"
@@ -186,7 +210,11 @@ export const TravelPlanModal = ({ isOpen, onClose, onSubmit, editingPlan }: Prop
                 placeholder="0.00"
               />
             </div>
-            <span className={`${errorClass} ${submitted && errors.budget ? "text-red-500" : "text-transparent"}`}>
+            <span
+              className={`${errorClass} ${
+                submitted && errors.budget ? "text-red-500" : "text-transparent"
+              }`}
+            >
               {errors.budget || "\u200b"}
             </span>
           </div>
@@ -227,14 +255,31 @@ export const TravelPlanModal = ({ isOpen, onClose, onSubmit, editingPlan }: Prop
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  <svg
+                    className="animate-spin h-5 w-5"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
                   </svg>
                   Saving...
                 </span>
+              ) : editingPlan ? (
+                "Update Plan"
               ) : (
-                editingPlan ? "Update Plan" : "Create Plan"
+                "Create Plan"
               )}
             </button>
           </div>

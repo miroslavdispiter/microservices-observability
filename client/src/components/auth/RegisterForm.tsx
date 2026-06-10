@@ -1,91 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { register as registerApi } from "../api/auth";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
+import { FormInput } from "./FormInput";
 
-interface InputFieldProps {
-  name: string;
-  label: string;
-  type?: string;
-  placeholder?: string;
-  borderColor?: string;
-  focusColor?: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  showPassword?: boolean;
-  toggleShowPassword?: () => void;
-  error?: string;
-  submitted: boolean;
-}
-
-const InputField: React.FC<InputFieldProps> = ({
-  name,
-  label,
-  type = "text",
-  placeholder,
-  borderColor = "border-indigo-200",
-  focusColor = "focus:border-indigo-500",
-  value,
-  onChange,
-  showPassword = false,
-  toggleShowPassword,
-  error,
-  submitted,
-}) => {
-  const errorClass =
-    "block min-h-[1rem] text-xs mt-1 transition-all duration-200";
-
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">
-        {label}
-      </label>
-      {type === "password" ? (
-        <div className="relative">
-          <input
-            name={name}
-            type={showPassword ? "text" : "password"}
-            value={value}
-            onChange={onChange}
-            placeholder={placeholder}
-            className={`w-full bg-transparent px-2 py-1.5 border-b-2 ${borderColor} ${focusColor}
-                       outline-none transition-colors duration-300 placeholder:text-gray-400 pr-14`}
-            autoComplete="new-password"
-          />
-          {toggleShowPassword && (
-            <button
-              type="button"
-              onClick={toggleShowPassword}
-              className="absolute right-1 top-1/2 -translate-y-1/2 text-xs font-medium
-                         text-indigo-500 hover:text-indigo-700 transition-colors cursor-pointer"
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
-          )}
-        </div>
-      ) : (
-        <input
-          name={name}
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          className={`w-full bg-transparent px-2 py-1.5 border-b-2 ${borderColor} ${focusColor}
-                     outline-none transition-colors duration-300 placeholder:text-gray-400`}
-        />
-      )}
-      <span
-        className={`${errorClass} ${
-          submitted && error ? "text-red-500" : "text-transparent"
-        }`}
-      >
-        {error || "\u200b"}
-      </span>
-    </div>
-  );
-};
-
-interface RegisterForm {
+interface RegisterFormData {
   firstName: string;
   lastName: string;
   username: string;
@@ -93,13 +11,13 @@ interface RegisterForm {
   password: string;
 }
 
-type FormErrors = Partial<Record<keyof RegisterForm, string>>;
+type FormErrors = Partial<Record<keyof RegisterFormData, string>>;
 
-export const RegisterPage = () => {
+export const RegisterForm = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { register, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const [form, setForm] = useState<RegisterForm>({
+  const [form, setForm] = useState<RegisterFormData>({
     firstName: "",
     lastName: "",
     username: "",
@@ -110,6 +28,13 @@ export const RegisterPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState("");
+
+  // ✅ REDIRECT AKO JE VEĆ ULOGOVAN
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      navigate("/travels", { replace: true });
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -143,38 +68,23 @@ export const RegisterPage = () => {
 
     setIsLoading(true);
     try {
-      const res = await registerApi({
-        firstName: form.firstName,
-        lastName: form.lastName,
-        username: form.username,
-        email: form.email,
-        password: form.password,
-      });
-      
-      // Backend vraća { success, message, data }
-      if (res.data.success && res.data.data) {
-        const authData = res.data.data;
-        login({
-          token: authData.token,
-          userId: String(authData.id),
-          email: authData.email,
-          role: authData.role,
-          firstName: authData.firstName,
-          lastName: authData.lastName,
-          username: authData.username,
-        });
-        navigate("/travels");
-      } else {
-        setServerError(res.data.message || "Registration failed.");
-      }
+      await register(form);
+      navigate("/travels");
     } catch (err: any) {
-      setServerError(
-        err?.response?.data?.message || "Registration failed. Please try again."
-      );
+      setServerError(err?.message || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Loading state dok se proverava autentifikacija
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-100">
+        <div className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-100 px-4 py-10">
@@ -199,7 +109,7 @@ export const RegisterPage = () => {
           noValidate
           className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1"
         >
-          <InputField
+          <FormInput
             name="firstName"
             label="First Name"
             placeholder="Name"
@@ -210,7 +120,7 @@ export const RegisterPage = () => {
             error={errors.firstName}
             submitted={submitted}
           />
-          <InputField
+          <FormInput
             name="lastName"
             label="Last Name"
             placeholder="Last Name"
@@ -222,7 +132,7 @@ export const RegisterPage = () => {
             submitted={submitted}
           />
 
-          <InputField
+          <FormInput
             name="username"
             label="Username"
             placeholder="Username"
@@ -233,7 +143,7 @@ export const RegisterPage = () => {
             error={errors.username}
             submitted={submitted}
           />
-          <InputField
+          <FormInput
             name="email"
             label="Email"
             type="email"
@@ -245,7 +155,7 @@ export const RegisterPage = () => {
           />
 
           <div className="md:col-span-2">
-            <InputField
+            <FormInput
               name="password"
               label="Password"
               type="password"
@@ -256,6 +166,7 @@ export const RegisterPage = () => {
               toggleShowPassword={() => setShowPassword(!showPassword)}
               error={errors.password}
               submitted={submitted}
+              autoComplete="new-password"
             />
           </div>
 

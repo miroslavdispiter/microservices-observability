@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login as loginApi } from "../api/auth";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
+import { FormInput } from "./FormInput";
 
-export const LoginPage = () => {
+export const LoginForm = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,7 +14,12 @@ export const LoginPage = () => {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState("");
 
-  const errorClass = "block min-h-[1rem] text-xs mt-1 transition-all duration-200";
+  // ✅ REDIRECT AKO JE VEĆ ULOGOVAN
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      navigate("/travels", { replace: true });
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   const validate = () => {
     const errs: { email?: string; password?: string } = {};
@@ -36,32 +41,23 @@ export const LoginPage = () => {
 
     setIsLoading(true);
     try {
-      const res = await loginApi({ email, password });
-      
-      // Backend vraća { success, message, data }
-      if (res.data.success && res.data.data) {
-        const authData = res.data.data;
-        login({
-          token: authData.token,
-          userId: String(authData.id),
-          email: authData.email,
-          role: authData.role,
-          firstName: authData.firstName,
-          lastName: authData.lastName,
-          username: authData.username,
-        });
-        navigate("/travels");
-      } else {
-        setServerError(res.data.message || "Login failed.");
-      }
+      await login({ email, password });
+      navigate("/travels");
     } catch (err: any) {
-      setServerError(
-        err?.response?.data?.message || "Invalid email or password."
-      );
+      setServerError(err?.message || "Invalid email or password.");
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Loading state dok se proverava autentifikacija
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-100">
+        <div className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-100 px-4">
@@ -82,67 +78,32 @@ export const LoginPage = () => {
         )}
 
         <form onSubmit={handleSubmit} noValidate className="space-y-5">
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-transparent px-3 py-2 border-b-2 border-indigo-200
-                         focus:border-indigo-500 outline-none transition-colors duration-300
-                         placeholder:text-gray-400"
-              placeholder="your@email.com"
-              autoComplete="email"
-            />
-            <span
-              className={`${errorClass} ${
-                submitted && errors.email ? "text-red-500" : "text-transparent"
-              }`}
-            >
-              {errors.email || "\u200b"}
-            </span>
-          </div>
+          <FormInput
+            name="email"
+            label="Email Address"
+            type="email"
+            placeholder="your@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={errors.email}
+            submitted={submitted}
+            autoComplete="email"
+          />
 
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-transparent px-3 py-2 border-b-2 border-indigo-200
-                           focus:border-indigo-500 outline-none transition-colors duration-300
-                           placeholder:text-gray-400 pr-16"
-                placeholder="••••••••"
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-sm font-medium
-                           text-indigo-500 hover:text-indigo-700 transition-colors cursor-pointer"
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-            <span
-              className={`${errorClass} ${
-                submitted && errors.password
-                  ? "text-red-500"
-                  : "text-transparent"
-              }`}
-            >
-              {errors.password || "\u200b"}
-            </span>
-          </div>
+          <FormInput
+            name="password"
+            label="Password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            showPassword={showPassword}
+            toggleShowPassword={() => setShowPassword(!showPassword)}
+            error={errors.password}
+            submitted={submitted}
+            autoComplete="current-password"
+          />
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={isLoading}

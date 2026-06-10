@@ -1,12 +1,13 @@
 import axios from "axios";
+import { readItem, removeItem } from "../helpers/local_storage";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:7001/api",
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = readItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -19,7 +20,8 @@ api.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.clear();
+      removeItem("token");
+      removeItem("user");
       window.location.href = "/login";
     }
     return Promise.reject(error);

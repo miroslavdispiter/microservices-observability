@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { travelService } from "../../api/TravelPlan/travelService";
-import { TravelPlanModal } from "../../components/TravelPlan/TravelPlanModal";
+import { travelApi } from "../../api/travelPlan/TravelPlanAPIService";
+import { TravelPlanModal } from "../../components/travelPlan/TravelPlanModal";
 import { Navbar } from "../../components/Navbar";
-import type { TravelPlan, CreateTravelPlanDto } from "../../types/TravelTypes";
+import type { TravelPlan } from "../../models/travel/TravelPlan";
+import type { CreateTravelPlanDto } from "../../dtos/travelPlan/CreateTravelPlanDto";
 
 export const TravelsPage = () => {
   const navigate = useNavigate();
@@ -16,16 +17,11 @@ export const TravelsPage = () => {
   const loadPlans = async () => {
     try {
       setIsLoading(true);
-      const res = await travelService.getAll();
-      // Backend vraća ServiceResult sa data property
-      if (res.data.success) {
-        setPlans(res.data.data || []);
-        setError("");
-      } else {
-        setError(res.data.message || "Failed to load travel plans.");
-      }
+      setError("");
+      const data = await travelApi.getAll();
+      setPlans(data);
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Failed to load travel plans.");
+      setError(err?.message || "Failed to load travel plans.");
     } finally {
       setIsLoading(false);
     }
@@ -36,37 +32,27 @@ export const TravelsPage = () => {
   }, []);
 
   const handleCreate = async (data: CreateTravelPlanDto) => {
-    const res = await travelService.create(data);
-    if (res.data.success) {
-      await loadPlans();
-    } else {
-      throw new Error(res.data.message || "Failed to create plan");
-    }
+    await travelApi.create(data);
+    await loadPlans();
   };
 
   const handleUpdate = async (data: CreateTravelPlanDto) => {
     if (editingPlan) {
-      const res = await travelService.update(editingPlan.id, data);
-      if (res.data.success) {
-        await loadPlans();
-        setEditingPlan(null);
-      } else {
-        throw new Error(res.data.message || "Failed to update plan");
-      }
+      await travelApi.update(editingPlan.id, data);
+      await loadPlans();
+      setEditingPlan(null);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this travel plan?")) return;
+    if (!window.confirm("Are you sure you want to delete this travel plan?"))
+      return;
+
     try {
-      const res = await travelService.delete(id);
-      if (res.data.success) {
-        await loadPlans();
-      } else {
-        alert(res.data.message || "Failed to delete plan.");
-      }
+      await travelApi.delete(id);
+      await loadPlans();
     } catch (err: any) {
-      alert(err?.response?.data?.message || "Failed to delete plan.");
+      alert(err?.message || "Failed to delete plan.");
     }
   };
 
@@ -90,7 +76,8 @@ export const TravelsPage = () => {
 
   const calculateDuration = (start: string, end: string) => {
     const days = Math.ceil(
-      (new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24)
+      (new Date(end).getTime() - new Date(start).getTime()) /
+        (1000 * 60 * 60 * 24)
     );
     return days > 1 ? `${days} days` : `${days} day`;
   };
@@ -106,7 +93,9 @@ export const TravelsPage = () => {
             <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">
               My Travel Plans
             </h1>
-            <p className="text-gray-600 mt-2">Plan and organize your upcoming adventures</p>
+            <p className="text-gray-600 mt-2">
+              Plan and organize your upcoming adventures
+            </p>
           </div>
           <button
             onClick={openCreateModal}
@@ -114,8 +103,18 @@ export const TravelsPage = () => {
                        text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl
                        transition-all transform hover:scale-105 flex items-center gap-2"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
             New Travel Plan
           </button>
@@ -131,24 +130,53 @@ export const TravelsPage = () => {
         {/* Loading State */}
         {isLoading ? (
           <div className="flex justify-center items-center py-20">
-            <svg className="animate-spin h-12 w-12 text-indigo-500" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            <svg
+              className="animate-spin h-12 w-12 text-indigo-500"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
             </svg>
           </div>
         ) : plans.length === 0 ? (
           /* Empty State */
           <div className="text-center py-20">
             <div className="text-6xl mb-4">✈️</div>
-            <h3 className="text-2xl font-semibold text-gray-700 mb-2">No travel plans yet</h3>
-            <p className="text-gray-500 mb-6">Start planning your next adventure!</p>
+            <h3 className="text-2xl font-semibold text-gray-700 mb-2">
+              No travel plans yet
+            </h3>
+            <p className="text-gray-500 mb-6">
+              Start planning your next adventure!
+            </p>
             <button
               onClick={openCreateModal}
               className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600
                          text-white px-6 py-3 rounded-xl font-semibold shadow-lg inline-flex items-center gap-2"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
               Create Your First Plan
             </button>
@@ -165,12 +193,12 @@ export const TravelsPage = () => {
                 onClick={() => navigate(`/travels/${plan.id}`)}
               >
                 <div className="bg-gradient-to-r from-violet-500 to-indigo-500 h-2" />
-                
+
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-1">
                     {plan.title}
                   </h3>
-                  
+
                   {plan.description && (
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                       {plan.description}
@@ -179,27 +207,61 @@ export const TravelsPage = () => {
 
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
                       </svg>
-                      <span>{formatDate(plan.startDate)} - {formatDate(plan.endDate)}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span>{calculateDuration(plan.startDate, plan.endDate)}</span>
+                      <span>
+                        {formatDate(plan.startDate)} -{" "}
+                        {formatDate(plan.endDate)}
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
-                      <span className="font-semibold">€{plan.budget.toLocaleString()}</span>
+                      <span>
+                        {calculateDuration(plan.startDate, plan.endDate)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span className="font-semibold">
+                        €{plan.budget.toLocaleString()}
+                      </span>
                     </div>
                   </div>
 
