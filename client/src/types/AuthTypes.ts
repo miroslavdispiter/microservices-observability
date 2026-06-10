@@ -30,3 +30,9 @@ export interface AuthResponse {
   token: string;
   role: string;
 }
+
+export interface AuthServiceResult {
+  success: boolean;
+  message: string;
+  data: AuthResponse;
+}

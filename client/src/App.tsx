@@ -3,9 +3,14 @@ import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { TravelsPage } from "./pages/TravelPlan/TravelsPage";
+import { TravelDetailsPage } from "./pages/TravelPlan/TravelDetailsPage";
 
-const TravelsPage = () => <div className="p-8"><h1 className="text-2xl font-bold">My Travels</h1></div>;
-const AdminDashboard = () => <div className="p-8"><h1 className="text-2xl font-bold">Admin Dashboard</h1></div>;
+const AdminDashboard = () => (
+  <div className="p-8">
+    <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+  </div>
+);
 
 function App() {
   return (
@@ -22,6 +27,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <TravelsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/travels/:id"
+            element={
+              <ProtectedRoute>
+                <TravelDetailsPage />
               </ProtectedRoute>
             }
           />

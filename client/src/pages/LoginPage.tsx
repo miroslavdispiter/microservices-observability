@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login as loginApi } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
-import type { AuthResponse } from "../types/AuthTypes";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -38,17 +37,23 @@ export const LoginPage = () => {
     setIsLoading(true);
     try {
       const res = await loginApi({ email, password });
-      const data: AuthResponse = res.data;
-      login({
-        token: data.token,
-        userId: String(data.id),
-        email: data.email,
-        role: data.role,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        username: data.username,
-      });
-      navigate("/travels");
+      
+      // Backend vraća { success, message, data }
+      if (res.data.success && res.data.data) {
+        const authData = res.data.data;
+        login({
+          token: authData.token,
+          userId: String(authData.id),
+          email: authData.email,
+          role: authData.role,
+          firstName: authData.firstName,
+          lastName: authData.lastName,
+          username: authData.username,
+        });
+        navigate("/travels");
+      } else {
+        setServerError(res.data.message || "Login failed.");
+      }
     } catch (err: any) {
       setServerError(
         err?.response?.data?.message || "Invalid email or password."

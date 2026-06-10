@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { register as registerApi } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
-import type { AuthResponse } from "../types/AuthTypes";
 
 interface InputFieldProps {
   name: string;
@@ -151,17 +150,23 @@ export const RegisterPage = () => {
         email: form.email,
         password: form.password,
       });
-      const data: AuthResponse = res.data;
-      login({
-        token: data.token,
-        userId: String(data.id),
-        email: data.email,
-        role: data.role,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        username: data.username,
-      });
-      navigate("/travels");
+      
+      // Backend vraća { success, message, data }
+      if (res.data.success && res.data.data) {
+        const authData = res.data.data;
+        login({
+          token: authData.token,
+          userId: String(authData.id),
+          email: authData.email,
+          role: authData.role,
+          firstName: authData.firstName,
+          lastName: authData.lastName,
+          username: authData.username,
+        });
+        navigate("/travels");
+      } else {
+        setServerError(res.data.message || "Registration failed.");
+      }
     } catch (err: any) {
       setServerError(
         err?.response?.data?.message || "Registration failed. Please try again."
@@ -197,7 +202,7 @@ export const RegisterPage = () => {
           <InputField
             name="firstName"
             label="First Name"
-            placeholder="John"
+            placeholder="Name"
             borderColor="border-cyan-200"
             focusColor="focus:border-cyan-500"
             value={form.firstName}
@@ -208,7 +213,7 @@ export const RegisterPage = () => {
           <InputField
             name="lastName"
             label="Last Name"
-            placeholder="Doe"
+            placeholder="Last Name"
             borderColor="border-cyan-200"
             focusColor="focus:border-cyan-500"
             value={form.lastName}
@@ -220,7 +225,7 @@ export const RegisterPage = () => {
           <InputField
             name="username"
             label="Username"
-            placeholder="johndoe"
+            placeholder="Username"
             borderColor="border-emerald-200"
             focusColor="focus:border-emerald-500"
             value={form.username}
@@ -232,7 +237,7 @@ export const RegisterPage = () => {
             name="email"
             label="Email"
             type="email"
-            placeholder="john@example.com"
+            placeholder="your@email.com"
             value={form.email}
             onChange={handleChange}
             error={errors.email}
