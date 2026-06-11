@@ -4,14 +4,17 @@ import { travelApi } from "../../api/travelPlan/TravelPlanAPIService";
 import { destinationApi } from "../../api/destination/DestinationAPIService";
 import { activityApi } from "../../api/activity/ActivityAPIService";
 import { expenseApi } from "../../api/expense/ExpenseAPIService";
+import { checklistApi } from "../../api/checklist/ChecklistAPIService";
 import { Navbar } from "../../components/Navbar";
 import { DestinationOverview } from "../../components/destination/DestinationOverview";
 import { ActivityOverview } from "../../components/activity/ActivityOverview";
 import { ExpenseOverview } from "../../components/expense/ExpenseOverview";
+import { ChecklistOverview } from "../../components/checklist/ChecklistOverview";
 import type { TravelPlan } from "../../models/travel/TravelPlan";
 import type { Destination } from "../../models/travel/Destination";
 import type { Activity } from "../../models/travel/Activity";
 import type { BudgetSummary } from "../../models/travel/BudgetSummary";
+import type { ChecklistItem } from "../../models/travel/ChecklistItem";
 
 export const TravelDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,10 +23,12 @@ export const TravelDetailsPage = () => {
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [budgetSummary, setBudgetSummary] = useState<BudgetSummary | null>(null);
+  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDestinationsLoading, setIsDestinationsLoading] = useState(false);
   const [isActivitiesLoading, setIsActivitiesLoading] = useState(false);
   const [isBudgetLoading, setIsBudgetLoading] = useState(false);
+  const [isChecklistLoading, setIsChecklistLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -35,6 +40,7 @@ export const TravelDetailsPage = () => {
       loadDestinations();
       loadActivities();
       loadBudgetSummary();
+      loadChecklistItems();
     }
   }, [plan]);
 
@@ -92,6 +98,20 @@ export const TravelDetailsPage = () => {
       console.error("Failed to load budget summary:", err);
     } finally {
       setIsBudgetLoading(false);
+    }
+  };
+
+  const loadChecklistItems = async () => {
+    if (!id) return;
+
+    try {
+      setIsChecklistLoading(true);
+      const data = await checklistApi.getAll(parseInt(id));
+      setChecklistItems(data);
+    } catch (err: any) {
+      console.error("Failed to load checklist items:", err);
+    } finally {
+      setIsChecklistLoading(false);
     }
   };
 
@@ -498,7 +518,7 @@ export const TravelDetailsPage = () => {
             </div>
           </div>
 
-          {/* Checklist Section (Placeholder) */}
+          {/* Checklist Section */}
           <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl border border-orange-100 overflow-hidden">
             <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-5">
               <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -520,13 +540,11 @@ export const TravelDetailsPage = () => {
               <p className="text-white/80 text-sm mt-1">What to bring</p>
             </div>
             <div className="p-6">
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">🎒</div>
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  Packing List Coming Soon
-                </h3>
-                <p className="text-gray-500">Create your packing checklist</p>
-              </div>
+              <ChecklistOverview
+                items={checklistItems}
+                travelPlanId={parseInt(id!)}
+                isLoading={isChecklistLoading}
+              />
             </div>
           </div>
         </div>

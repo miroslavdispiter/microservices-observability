@@ -107,6 +107,8 @@
     <Compile Include="Common\ServiceResult.cs" />
     <Compile Include="DTOs\Activity\ActivityDto.cs" />
     <Compile Include="DTOs\Activity\CreateActivityDto.cs" />
+    <Compile Include="DTOs\Checklist\ChecklistItemDto.cs" />
+    <Compile Include="DTOs\Checklist\CreateChecklistItemDto.cs" />
     <Compile Include="DTOs\Destination\CreateDestinationDto.cs" />
     <Compile Include="DTOs\Destination\DestinationDto.cs" />
     <Compile Include="DTOs\Expense\BudgetSummaryDto.cs" />
@@ -118,9 +120,11 @@
     <Compile Include="DTOs\User\LoginRequestDto.cs" />
     <Compile Include="DTOs\User\RegisterRequestDto.cs" />
     <Compile Include="Enums\ActivityStatus.cs" />
+    <Compile Include="Enums\ChecklistPriority.cs" />
     <Compile Include="Enums\ExpenseCategory.cs" />
     <Compile Include="Enums\UserRole.cs" />
     <Compile Include="Interfaces\IActivityService.cs" />
+    <Compile Include="Interfaces\IChecklistService.cs" />
     <Compile Include="Interfaces\IDestinationService.cs" />
     <Compile Include="Interfaces\IExpenseService.cs" />
     <Compile Include="Interfaces\ITravelService.cs" />

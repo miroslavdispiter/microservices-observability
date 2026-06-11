@@ -19,5 +19,8 @@ namespace WebAPIService.Services
 
         public IExpenseService GetExpenseProxy()
             => ServiceProxy.Create<IExpenseService>(new Uri("fabric:/TravelPlannerApp/TravelService"));
+
+        public IChecklistService GetChecklistProxy()
+            => ServiceProxy.Create<IChecklistService>(new Uri("fabric:/TravelPlannerApp/TravelService"));
     }
 }

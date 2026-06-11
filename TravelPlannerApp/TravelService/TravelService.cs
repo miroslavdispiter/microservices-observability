@@ -6,6 +6,7 @@ using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using Shared.Common;
 using Shared.DTOs.Activity;
+using Shared.DTOs.Checklist;
 using Shared.DTOs.Destination;
 using Shared.DTOs.Expense;
 using Shared.DTOs.TravelPlan;
@@ -18,7 +19,7 @@ using TravelService.Services;
 
 namespace TravelService
 {
-    internal sealed class TravelService : StatelessService, ITravelService, IDestinationService, IActivityService, IExpenseService
+    internal sealed class TravelService : StatelessService, ITravelService, IDestinationService, IActivityService, IExpenseService, IChecklistService
     {
         private readonly ServiceProvider _serviceProvider;
 
@@ -48,12 +49,14 @@ namespace TravelService
             services.AddScoped<IDestinationRepository, DestinationRepository>();
             services.AddScoped<IActivityRepository, ActivityRepository>();
             services.AddScoped<IExpenseRepository, ExpenseRepository>();
+            services.AddScoped<IChecklistRepository, ChecklistRepository>();
 
             // Register business logic services
             services.AddScoped<ITravelService, TravelPlanImplementation>();
             services.AddScoped<IDestinationService, DestinationImplementation>();
             services.AddScoped<IActivityService, ActivityImplementation>();
             services.AddScoped<IExpenseService, ExpenseImplementation>();
+            services.AddScoped<IChecklistService, ChecklistImplementation>();
 
             _serviceProvider = services.BuildServiceProvider();
         }
@@ -284,6 +287,73 @@ namespace TravelService
             {
                 var service = scope.ServiceProvider.GetRequiredService<IExpenseService>();
                 return await service.GetBudgetSummary(travelPlanId);
+            }
+        }
+
+        #endregion
+
+        #region Checklist
+
+        public async Task<ServiceResult<ChecklistItemDto>> CreateChecklistItem(int travelPlanId, CreateChecklistItemDto dto)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IChecklistService>();
+                return await service.CreateChecklistItem(travelPlanId, dto);
+            }
+        }
+
+        public async Task<ServiceResult<List<ChecklistItemDto>>> GetAllChecklistItems(int travelPlanId)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IChecklistService>();
+                return await service.GetAllChecklistItems(travelPlanId);
+            }
+        }
+
+        public async Task<ServiceResult<ChecklistItemDto>> GetChecklistItemById(int id)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IChecklistService>();
+                return await service.GetChecklistItemById(id);
+            }
+        }
+
+        public async Task<ServiceResult<bool>> UpdateChecklistItem(int id, CreateChecklistItemDto dto)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IChecklistService>();
+                return await service.UpdateChecklistItem(id, dto);
+            }
+        }
+
+        public async Task<ServiceResult<bool>> ToggleChecklistItem(int id)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IChecklistService>();
+                return await service.ToggleChecklistItem(id);
+            }
+        }
+
+        public async Task<ServiceResult<bool>> DeleteChecklistItem(int id)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IChecklistService>();
+                return await service.DeleteChecklistItem(id);
+            }
+        }
+
+        public async Task<ServiceResult<int>> GetCompletedCount(int travelPlanId)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IChecklistService>();
+                return await service.GetCompletedCount(travelPlanId);
             }
         }
 
