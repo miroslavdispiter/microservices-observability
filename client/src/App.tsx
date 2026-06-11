@@ -6,6 +6,7 @@ import { TravelsPage } from "./pages/travelPlan/TravelsPage";
 import { TravelDetailsPage } from "./pages/travelPlan/TravelDetailsPage";
 import { DestinationsPage } from "./pages/destination/DestinationsPage";
 import { ActivitiesPage } from "./pages/activity/ActivitiesPage";
+import { ExpensesPage } from "./pages/expense/ExpensesPage";
 
 const AdminDashboard = () => (
   <div className="p-8">
@@ -48,6 +49,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ActivitiesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/travels/:id/expenses"
+        element={
+          <ProtectedRoute>
+            <ExpensesPage />
           </ProtectedRoute>
         }
       />

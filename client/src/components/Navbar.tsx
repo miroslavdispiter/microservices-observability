@@ -73,8 +73,11 @@ export const Navbar = ({ activeTravelPlanId }: NavbarProps) => {
                   </Link>
                   <Link
                     to={`/travels/${activeTravelPlanId}/expenses`}
-                    className="text-white/60 px-4 py-2 rounded-lg cursor-not-allowed"
-                    onClick={(e) => e.preventDefault()}
+                    className={`text-white/90 hover:text-white hover:bg-white/10 px-4 py-2 rounded-lg transition-all ${
+                      isActive(`/travels/${activeTravelPlanId}/expenses`)
+                        ? "bg-white/20"
+                        : ""
+                    }`}
                   >
                     💰 Expenses
                   </Link>

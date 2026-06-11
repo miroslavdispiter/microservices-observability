@@ -3,12 +3,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { travelApi } from "../../api/travelPlan/TravelPlanAPIService";
 import { destinationApi } from "../../api/destination/DestinationAPIService";
 import { activityApi } from "../../api/activity/ActivityAPIService";
+import { expenseApi } from "../../api/expense/ExpenseAPIService";
 import { Navbar } from "../../components/Navbar";
 import { DestinationOverview } from "../../components/destination/DestinationOverview";
 import { ActivityOverview } from "../../components/activity/ActivityOverview";
+import { ExpenseOverview } from "../../components/expense/ExpenseOverview";
 import type { TravelPlan } from "../../models/travel/TravelPlan";
 import type { Destination } from "../../models/travel/Destination";
 import type { Activity } from "../../models/travel/Activity";
+import type { BudgetSummary } from "../../models/travel/BudgetSummary";
 
 export const TravelDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,9 +19,11 @@ export const TravelDetailsPage = () => {
   const [plan, setPlan] = useState<TravelPlan | null>(null);
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [budgetSummary, setBudgetSummary] = useState<BudgetSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDestinationsLoading, setIsDestinationsLoading] = useState(false);
   const [isActivitiesLoading, setIsActivitiesLoading] = useState(false);
+  const [isBudgetLoading, setIsBudgetLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -29,6 +34,7 @@ export const TravelDetailsPage = () => {
     if (plan) {
       loadDestinations();
       loadActivities();
+      loadBudgetSummary();
     }
   }, [plan]);
 
@@ -72,6 +78,20 @@ export const TravelDetailsPage = () => {
       console.error("Failed to load activities:", err);
     } finally {
       setIsActivitiesLoading(false);
+    }
+  };
+
+  const loadBudgetSummary = async () => {
+    if (!id) return;
+
+    try {
+      setIsBudgetLoading(true);
+      const data = await expenseApi.getBudgetSummary(parseInt(id));
+      setBudgetSummary(data);
+    } catch (err: any) {
+      console.error("Failed to load budget summary:", err);
+    } finally {
+      setIsBudgetLoading(false);
     }
   };
 
@@ -446,9 +466,9 @@ export const TravelDetailsPage = () => {
             </div>
           </div>
 
-          {/* Expenses Section (Placeholder) */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl border border-purple-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-5">
+          {/* Expenses Section */}
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl border border-emerald-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-6 py-5">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <svg
                   className="w-6 h-6"
@@ -470,15 +490,11 @@ export const TravelDetailsPage = () => {
               </p>
             </div>
             <div className="p-6">
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">💰</div>
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  Expenses Coming Soon
-                </h3>
-                <p className="text-gray-500">
-                  Keep track of all your travel expenses
-                </p>
-              </div>
+              <ExpenseOverview
+                budgetSummary={budgetSummary}
+                travelPlanId={parseInt(id!)}
+                isLoading={isBudgetLoading}
+              />
             </div>
           </div>
 
