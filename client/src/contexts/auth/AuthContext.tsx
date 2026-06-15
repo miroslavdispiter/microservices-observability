@@ -23,33 +23,12 @@ export interface AuthContextType extends AuthState {
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-const parseToken = (token: string): User | null => {
+const isTokenExpired = (token: string): boolean => {
   try {
     const decoded = jwtDecode<JwtPayload>(token);
-
-    if (decoded.exp * 1000 < Date.now()) {
-      removeItem("token");
-      return null;
-    }
-
-    return {
-      id: decoded[
-        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-      ],
-      firstName: "",
-      lastName: "",
-      username:
-        decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
-      email:
-        decoded[
-          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
-        ],
-      role: decoded[
-        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-      ] as "User" | "Admin",
-    };
+    return decoded.exp * 1000 < Date.now();
   } catch {
-    return null;
+    return true;
   }
 };
 
@@ -62,15 +41,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
+    // Učitaj token i user iz localStorage
     const token = readItem("token");
-    if (token) {
-      const user = parseToken(token);
-      setState({
-        user,
-        token: user ? token : null,
-        isAuthenticated: !!user,
-        isLoading: false,
-      });
+    const userJson = readItem("user");
+
+    if (token && userJson) {
+      // Proveri da li je token istekao
+      if (isTokenExpired(token)) {
+        removeItem("token");
+        removeItem("user");
+        setState((prev) => ({ ...prev, isLoading: false }));
+        return;
+      }
+
+      try {
+        const user: User = JSON.parse(userJson);
+        setState({
+          user,
+          token,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+      } catch {
+        removeItem("token");
+        removeItem("user");
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
     } else {
       setState((prev) => ({ ...prev, isLoading: false }));
     }
@@ -78,12 +74,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (data: LoginRequest) => {
     const response = await authApi.login(data);
-    const user = parseToken(response.token);
 
+    // Sačuvaj token i user u localStorage
     saveItem("token", response.token);
+    saveItem("user", JSON.stringify(response.user));
 
     setState({
-      user,
+      user: response.user,
       token: response.token,
       isAuthenticated: true,
       isLoading: false,
@@ -92,12 +89,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const register = async (data: RegisterRequest) => {
     const response = await authApi.register(data);
-    const user = parseToken(response.token);
 
+    // Sačuvaj token i user u localStorage
     saveItem("token", response.token);
+    saveItem("user", JSON.stringify(response.user));
 
     setState({
-      user,
+      user: response.user,
       token: response.token,
       isAuthenticated: true,
       isLoading: false,
@@ -106,6 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     authApi.logout();
+    removeItem("user");
 
     setState({
       user: null,

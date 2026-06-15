@@ -117,8 +117,11 @@
     <Compile Include="DTOs\TravelPlan\CreateTravelPlanDto.cs" />
     <Compile Include="DTOs\TravelPlan\TravelPlanDto.cs" />
     <Compile Include="DTOs\User\AuthResponseDto.cs" />
+    <Compile Include="DTOs\User\ChangePasswordDto.cs" />
     <Compile Include="DTOs\User\LoginRequestDto.cs" />
     <Compile Include="DTOs\User\RegisterRequestDto.cs" />
+    <Compile Include="DTOs\User\UpdateUserDto.cs" />
+    <Compile Include="DTOs\User\UserDto.cs" />
     <Compile Include="Enums\ActivityStatus.cs" />
     <Compile Include="Enums\ChecklistPriority.cs" />
     <Compile Include="Enums\ExpenseCategory.cs" />

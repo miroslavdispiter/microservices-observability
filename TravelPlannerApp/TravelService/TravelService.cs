@@ -108,6 +108,15 @@ namespace TravelService
             }
         }
 
+        public async Task<ServiceResult<List<TravelPlanDto>>> GetAllTravelPlans()
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<ITravelService>();
+                return await service.GetAllTravelPlans();
+            }
+        }
+
         #endregion
 
         #region Destination

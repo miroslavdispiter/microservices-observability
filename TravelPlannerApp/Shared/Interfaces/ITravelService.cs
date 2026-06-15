@@ -14,7 +14,9 @@ namespace Shared.Interfaces
         Task<ServiceResult<TravelPlanDto>> GetById(int id);
         Task<ServiceResult<bool>> Update(int id, CreateTravelPlanDto dto);
         Task<ServiceResult<bool>> Delete(int id);
-        
+
+        Task<ServiceResult<List<TravelPlanDto>>> GetAllTravelPlans();
+
         #endregion
     }
 }

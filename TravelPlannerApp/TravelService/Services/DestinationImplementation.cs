@@ -21,7 +21,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<DestinationDto>> CreateDestination(int travelPlanId, CreateDestinationDto dto)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<DestinationDto>.FailureResult("Travel plan not found.");
 
@@ -58,7 +58,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<List<DestinationDto>>> GetAllDestinations(int travelPlanId)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<List<DestinationDto>>.FailureResult("Travel plan not found.");
 
@@ -104,7 +104,7 @@ namespace TravelService.Services
             if (destination == null)
                 return ServiceResult<bool>.FailureResult("Destination not found.");
 
-            var travelPlan = await _travelPlanRepo.GetById(destination.TravelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(destination.TravelPlanId);
 
             if (dto.DepartureDate < dto.ArrivalDate)
                 return ServiceResult<bool>.FailureResult("Departure date cannot be before arrival date.");

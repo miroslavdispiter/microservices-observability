@@ -40,6 +40,7 @@ namespace UserService
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IAuthService, AuthServiceImplementation>();
+            services.AddScoped<IAdminService, AdminServiceImplementation>();
             services.AddScoped<IJwtService, JwtService>();
 
             _serviceProvider = services.BuildServiceProvider();
@@ -62,6 +63,52 @@ namespace UserService
                 return await service.Login(request);
             }
         }
+
+        public async Task<ServiceResult<List<UserDto>>> GetAllUsers()
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IAdminService>();
+                return await service.GetAllUsers();
+            }
+        }
+
+        public async Task<ServiceResult<UserDto>> GetUserById(int id)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IAdminService>();
+                return await service.GetUserById(id);
+            }
+        }
+
+        public async Task<ServiceResult<bool>> UpdateUser(int id, UpdateUserDto dto)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IAdminService>();
+                return await service.UpdateUser(id, dto);
+            }
+        }
+
+        public async Task<ServiceResult<bool>> DeleteUser(int id)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IAdminService>();
+                return await service.DeleteUser(id);
+            }
+        }
+
+        public async Task<ServiceResult<bool>> ChangeUserPassword(int id, ChangePasswordDto dto)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IAdminService>();
+                return await service.ChangeUserPassword(id, dto);
+            }
+        }
+
 
         protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
         {

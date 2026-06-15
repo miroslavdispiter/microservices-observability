@@ -1,119 +1,184 @@
 ﻿using Shared.Common;
 using Shared.DTOs.TravelPlan;
 using Shared.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using TravelService.Interfaces;
 using TravelService.Models;
 
 namespace TravelService.Services
 {
     public class TravelPlanImplementation : ITravelService
     {
-        private readonly ITravelPlanRepository _repo;
+        private readonly ITravelPlanRepository _repository;
 
-        public TravelPlanImplementation(ITravelPlanRepository repo)
+        public TravelPlanImplementation(ITravelPlanRepository repository)
         {
-            _repo = repo;
+            _repository = repository;
         }
 
         public async Task<ServiceResult<TravelPlanDto>> Create(int userId, CreateTravelPlanDto dto)
         {
-            if (dto.EndDate < dto.StartDate)
-                return ServiceResult<TravelPlanDto>.FailureResult("End date cannot be before start date.");
-
-            if (dto.Budget < 0)
-                return ServiceResult<TravelPlanDto>.FailureResult("Budget cannot be negative.");
-
-            var plan = new TravelPlan
+            try
             {
-                UserId = userId,
-                Title = dto.Title,
-                Description = dto.Description,
-                StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
-                Budget = dto.Budget,
-                Notes = dto.Notes,
-                CreatedAt = DateTime.UtcNow
-            };
+                var plan = new TravelPlan
+                {
+                    UserId = userId,
+                    Title = dto.Title,
+                    Description = dto.Description,
+                    StartDate = dto.StartDate,
+                    EndDate = dto.EndDate,
+                    Budget = dto.Budget,
+                    Notes = dto.Notes,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-            var saved = await _repo.AddAsync(plan);
+                var created = await _repository.CreateAsync(plan);
 
-            return ServiceResult<TravelPlanDto>.SuccessResult(new TravelPlanDto
+                var planDto = new TravelPlanDto
+                {
+                    Id = created.Id,
+                    Title = created.Title,
+                    Description = created.Description,
+                    StartDate = created.StartDate,
+                    EndDate = created.EndDate,
+                    Budget = created.Budget,
+                    Notes = created.Notes
+                };
+
+                return ServiceResult<TravelPlanDto>.SuccessResult(planDto, "Travel plan created successfully.");
+            }
+            catch (Exception ex)
             {
-                Id = saved.Id,
-                Title = saved.Title,
-                Description = saved.Description,
-                StartDate = saved.StartDate,
-                EndDate = saved.EndDate,
-                Budget = saved.Budget,
-                Notes = saved.Notes
-            });
+                return ServiceResult<TravelPlanDto>.FailureResult($"Failed to create travel plan: {ex.Message}");
+            }
         }
 
         public async Task<ServiceResult<List<TravelPlanDto>>> GetAll(int userId)
         {
-            var plans = await _repo.GetAllByUserId(userId);
-
-            var result = plans.Select(p => new TravelPlanDto
+            try
             {
-                Id = p.Id,
-                Title = p.Title,
-                Description = p.Description,
-                StartDate = p.StartDate,
-                EndDate = p.EndDate,
-                Budget = p.Budget,
-                Notes = p.Notes
-            }).ToList();
+                var plans = await _repository.GetAllByUserIdAsync(userId);
 
-            return ServiceResult<List<TravelPlanDto>>.SuccessResult(result);
+                var planDtos = plans.Select(p => new TravelPlanDto
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Description = p.Description,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
+                    Budget = p.Budget,
+                    Notes = p.Notes
+                }).ToList();
+
+                return ServiceResult<List<TravelPlanDto>>.SuccessResult(planDtos, "Travel plans retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<TravelPlanDto>>.FailureResult($"Failed to retrieve travel plans: {ex.Message}");
+            }
         }
 
         public async Task<ServiceResult<TravelPlanDto>> GetById(int id)
         {
-            var plan = await _repo.GetById(id);
-
-            if (plan == null)
-                return ServiceResult<TravelPlanDto>.FailureResult("Not found");
-
-            return ServiceResult<TravelPlanDto>.SuccessResult(new TravelPlanDto
+            try
             {
-                Id = plan.Id,
-                Title = plan.Title,
-                Description = plan.Description,
-                StartDate = plan.StartDate,
-                EndDate = plan.EndDate,
-                Budget = plan.Budget,
-                Notes = plan.Notes
-            });
+                var plan = await _repository.GetByIdAsync(id);
+                if (plan == null)
+                {
+                    return ServiceResult<TravelPlanDto>.FailureResult("Travel plan not found.");
+                }
+
+                var planDto = new TravelPlanDto
+                {
+                    Id = plan.Id,
+                    Title = plan.Title,
+                    Description = plan.Description,
+                    StartDate = plan.StartDate,
+                    EndDate = plan.EndDate,
+                    Budget = plan.Budget,
+                    Notes = plan.Notes
+                };
+
+                return ServiceResult<TravelPlanDto>.SuccessResult(planDto, "Travel plan retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<TravelPlanDto>.FailureResult($"Failed to retrieve travel plan: {ex.Message}");
+            }
         }
 
         public async Task<ServiceResult<bool>> Update(int id, CreateTravelPlanDto dto)
         {
-            var plan = await _repo.GetById(id);
+            try
+            {
+                var plan = await _repository.GetByIdAsync(id);
+                if (plan == null)
+                {
+                    return ServiceResult<bool>.FailureResult("Travel plan not found.");
+                }
 
-            if (plan == null)
-                return ServiceResult<bool>.FailureResult("Not found");
+                plan.Title = dto.Title;
+                plan.Description = dto.Description;
+                plan.StartDate = dto.StartDate;
+                plan.EndDate = dto.EndDate;
+                plan.Budget = dto.Budget;
+                plan.Notes = dto.Notes;
 
-            plan.Title = dto.Title;
-            plan.Description = dto.Description;
-            plan.StartDate = dto.StartDate;
-            plan.EndDate = dto.EndDate;
-            plan.Budget = dto.Budget;
-            plan.Notes = dto.Notes;
+                var result = await _repository.UpdateAsync(plan);
 
-            await _repo.Update(plan);
-
-            return ServiceResult<bool>.SuccessResult(true);
+                return result
+                    ? ServiceResult<bool>.SuccessResult(true, "Travel plan updated successfully.")
+                    : ServiceResult<bool>.FailureResult("Failed to update travel plan.");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<bool>.FailureResult($"Failed to update travel plan: {ex.Message}");
+            }
         }
 
         public async Task<ServiceResult<bool>> Delete(int id)
         {
-            var plan = await _repo.GetById(id);
+            try
+            {
+                var result = await _repository.DeleteAsync(id);
 
-            if (plan == null)
-                return ServiceResult<bool>.FailureResult("Not found");
+                return result
+                    ? ServiceResult<bool>.SuccessResult(true, "Travel plan deleted successfully.")
+                    : ServiceResult<bool>.FailureResult("Travel plan not found.");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<bool>.FailureResult($"Failed to delete travel plan: {ex.Message}");
+            }
+        }
 
-            await _repo.Delete(plan);
+        // Admin
+        public async Task<ServiceResult<List<TravelPlanDto>>> GetAllTravelPlans()
+        {
+            try
+            {
+                var plans = await _repository.GetAllAsync();
 
-            return ServiceResult<bool>.SuccessResult(true);
+                var planDtos = plans.Select(p => new TravelPlanDto
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Description = p.Description,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
+                    Budget = p.Budget,
+                    Notes = p.Notes
+                }).ToList();
+
+                return ServiceResult<List<TravelPlanDto>>.SuccessResult(planDtos, "All travel plans retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<List<TravelPlanDto>>.FailureResult($"Failed to retrieve travel plans: {ex.Message}");
+            }
         }
     }
 }

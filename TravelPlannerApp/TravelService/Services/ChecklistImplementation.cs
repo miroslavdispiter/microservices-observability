@@ -25,7 +25,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<ChecklistItemDto>> CreateChecklistItem(int travelPlanId, CreateChecklistItemDto dto)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<ChecklistItemDto>.FailureResult("Travel plan not found.");
 
@@ -60,7 +60,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<List<ChecklistItemDto>>> GetAllChecklistItems(int travelPlanId)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<List<ChecklistItemDto>>.FailureResult("Travel plan not found.");
 
@@ -147,7 +147,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<int>> GetCompletedCount(int travelPlanId)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<int>.FailureResult("Travel plan not found.");
 

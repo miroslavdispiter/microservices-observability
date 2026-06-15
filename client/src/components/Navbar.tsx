@@ -10,6 +10,10 @@ export const Navbar = ({ activeTravelPlanId }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  console.log("Current user:", user);
+  console.log("User role:", user?.role);
+  console.log("Is Admin:", user?.role === "Admin");
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -94,14 +98,17 @@ export const Navbar = ({ activeTravelPlanId }: NavbarProps) => {
                 </>
               )}
 
+              {/* Admin Link - UVEK VIDLJIV za Admin korisnike */}
               {user?.role === "Admin" && (
                 <Link
                   to="/admin/dashboard"
                   className={`text-white/90 hover:text-white hover:bg-white/10 px-4 py-2 rounded-lg transition-all ${
-                    isActive("/admin/dashboard") ? "bg-white/20" : ""
+                    isActive("/admin/dashboard") || isActive("/admin/travel-plans")
+                      ? "bg-white/20"
+                      : ""
                   }`}
                 >
-                  Admin
+                  🛡️ Admin
                 </Link>
               )}
             </div>
@@ -112,7 +119,9 @@ export const Navbar = ({ activeTravelPlanId }: NavbarProps) => {
               <span className="font-medium">
                 {user?.firstName} {user?.lastName}
               </span>
-              <span className="text-white/70 ml-2">({user?.role})</span>
+              <span className="text-white/70 ml-2">
+                ({user?.role})
+              </span>
             </div>
             <button
               onClick={handleLogout}

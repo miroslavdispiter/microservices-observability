@@ -8,12 +8,8 @@ import { DestinationsPage } from "./pages/destination/DestinationsPage";
 import { ActivitiesPage } from "./pages/activity/ActivitiesPage";
 import { ExpensesPage } from "./pages/expense/ExpensesPage";
 import { ChecklistPage } from "./pages/checklist/ChecklistPage";
-
-const AdminDashboard = () => (
-  <div className="p-8">
-    <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-  </div>
-);
+import { AdminDashboard } from "./pages/admin/AdminDashboard";
+import { AdminTravelPlansPage } from "./pages/admin/AdminTravelPlansPage";
 
 export default function App() {
   return (
@@ -75,6 +71,14 @@ export default function App() {
         element={
           <ProtectedRoute requiredRole="Admin">
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/travel-plans"
+        element={
+          <ProtectedRoute requiredRole="Admin">
+            <AdminTravelPlansPage />
           </ProtectedRoute>
         }
       />

@@ -25,7 +25,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<ActivityDto>> CreateActivity(int travelPlanId, CreateActivityDto dto)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<ActivityDto>.FailureResult("Travel plan not found.");
 
@@ -69,7 +69,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<List<ActivityDto>>> GetAllActivities(int travelPlanId)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<List<ActivityDto>>.FailureResult("Travel plan not found.");
 
@@ -93,7 +93,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<List<ActivityDto>>> GetActivitiesByDate(int travelPlanId, DateTime date)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<List<ActivityDto>>.FailureResult("Travel plan not found.");
 
@@ -117,7 +117,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<List<ActivityDto>>> GetActivitiesInRange(int travelPlanId, DateTime startDate, DateTime endDate)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<List<ActivityDto>>.FailureResult("Travel plan not found.");
 
@@ -170,7 +170,7 @@ namespace TravelService.Services
             if (activity == null)
                 return ServiceResult<bool>.FailureResult("Activity not found.");
 
-            var travelPlan = await _travelPlanRepo.GetById(activity.TravelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(activity.TravelPlanId);
 
             if (dto.Date.Date < travelPlan.StartDate.Date || dto.Date.Date > travelPlan.EndDate.Date)
                 return ServiceResult<bool>.FailureResult("Activity date must be within travel plan dates.");

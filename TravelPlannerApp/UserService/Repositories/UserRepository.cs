@@ -35,5 +35,35 @@ namespace UserService.Repositories
             await _context.SaveChangesAsync();
             return user;
         }
+
+        public async Task<List<User>> GetAllAsync()
+        {
+            return await _context.Users
+                .OrderByDescending(u => u.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<bool> UpdateAsync(User user)
+        {
+            _context.Users.Update(user);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+                return false;
+
+            _context.Users.Remove(user);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+
+        public async Task<bool> ExistsAsync(int id)
+        {
+            return await _context.Users.AnyAsync(u => u.Id == id);
+        }
     }
 }

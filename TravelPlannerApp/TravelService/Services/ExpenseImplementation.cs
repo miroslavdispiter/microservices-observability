@@ -25,7 +25,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<ExpenseDto>> CreateExpense(int travelPlanId, CreateExpenseDto dto)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<ExpenseDto>.FailureResult("Travel plan not found.");
 
@@ -65,7 +65,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<List<ExpenseDto>>> GetAllExpenses(int travelPlanId)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<List<ExpenseDto>>.FailureResult("Travel plan not found.");
 
@@ -87,7 +87,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<List<ExpenseDto>>> GetExpensesByCategory(int travelPlanId, int category)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<List<ExpenseDto>>.FailureResult("Travel plan not found.");
 
@@ -136,7 +136,7 @@ namespace TravelService.Services
             if (expense == null)
                 return ServiceResult<bool>.FailureResult("Expense not found.");
 
-            var travelPlan = await _travelPlanRepo.GetById(expense.TravelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(expense.TravelPlanId);
 
             if (dto.Amount < 0)
                 return ServiceResult<bool>.FailureResult("Amount cannot be negative.");
@@ -172,7 +172,7 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<BudgetSummaryDto>> GetBudgetSummary(int travelPlanId)
         {
-            var travelPlan = await _travelPlanRepo.GetById(travelPlanId);
+            var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
                 return ServiceResult<BudgetSummaryDto>.FailureResult("Travel plan not found.");
 

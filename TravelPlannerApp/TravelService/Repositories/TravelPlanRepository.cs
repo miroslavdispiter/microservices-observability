@@ -1,11 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
+using TravelService.DbContext;
+using TravelService.Interfaces;
+using TravelService.Models;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TravelService.DbContext;
-using TravelService.Models;
 
 namespace TravelService.Repositories
 {
@@ -18,35 +17,54 @@ namespace TravelService.Repositories
             _context = context;
         }
 
-        public async Task<TravelPlan> AddAsync(TravelPlan plan)
+        public async Task<TravelPlan> CreateAsync(TravelPlan plan)
         {
             await _context.TravelPlans.AddAsync(plan);
             await _context.SaveChangesAsync();
             return plan;
         }
 
-        public async Task<List<TravelPlan>> GetAllByUserId(int userId)
+        public async Task<List<TravelPlan>> GetAllByUserIdAsync(int userId)
         {
             return await _context.TravelPlans
-                .Where(x => x.UserId == userId)
+                .Where(tp => tp.UserId == userId)
+                .OrderByDescending(tp => tp.CreatedAt)
                 .ToListAsync();
         }
 
-        public async Task<TravelPlan> GetById(int id)
+        public async Task<TravelPlan> GetByIdAsync(int id)
         {
             return await _context.TravelPlans.FindAsync(id);
         }
 
-        public async Task Update(TravelPlan plan)
+        public async Task<bool> UpdateAsync(TravelPlan plan)
         {
             _context.TravelPlans.Update(plan);
-            await _context.SaveChangesAsync();
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
         }
 
-        public async Task Delete(TravelPlan plan)
+        public async Task<bool> DeleteAsync(int id)
         {
+            var plan = await _context.TravelPlans.FindAsync(id);
+            if (plan == null)
+                return false;
+
             _context.TravelPlans.Remove(plan);
-            await _context.SaveChangesAsync();
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+
+        public async Task<bool> ExistsAsync(int id)
+        {
+            return await _context.TravelPlans.AnyAsync(tp => tp.Id == id);
+        }
+
+        public async Task<List<TravelPlan>> GetAllAsync()
+        {
+            return await _context.TravelPlans
+                .OrderByDescending(tp => tp.CreatedAt)
+                .ToListAsync();
         }
     }
 }
