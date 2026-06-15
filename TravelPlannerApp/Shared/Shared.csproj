@@ -114,6 +114,9 @@
     <Compile Include="DTOs\Expense\BudgetSummaryDto.cs" />
     <Compile Include="DTOs\Expense\CreateExpenseDto.cs" />
     <Compile Include="DTOs\Expense\ExpenseDto.cs" />
+    <Compile Include="DTOs\Sharing\CreateSharingTokenDto.cs" />
+    <Compile Include="DTOs\Sharing\SharingTokenDto.cs" />
+    <Compile Include="DTOs\Sharing\ValidateSharingTokenDto.cs" />
     <Compile Include="DTOs\TravelPlan\CreateTravelPlanDto.cs" />
     <Compile Include="DTOs\TravelPlan\TravelPlanDto.cs" />
     <Compile Include="DTOs\User\AuthResponseDto.cs" />
@@ -130,6 +133,7 @@
     <Compile Include="Interfaces\IChecklistService.cs" />
     <Compile Include="Interfaces\IDestinationService.cs" />
     <Compile Include="Interfaces\IExpenseService.cs" />
+    <Compile Include="Interfaces\ISharingService.cs" />
     <Compile Include="Interfaces\ITravelService.cs" />
     <Compile Include="Interfaces\IUserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

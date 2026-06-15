@@ -1,68 +1,169 @@
+using Microsoft.ServiceFabric.Data;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using Microsoft.ServiceFabric.Services.Remoting.Runtime;
+using Microsoft.ServiceFabric.Services.Runtime;
+using Shared.Common;
+using Shared.DTOs.Sharing;
+using Shared.Interfaces;
+using SharingService.Interfaces;
+using SharingService.Repositories;
+using SharingService.Services;
 using System;
 using System.Collections.Generic;
 using System.Fabric;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.ServiceFabric.Data.Collections;
-using Microsoft.ServiceFabric.Services.Communication.Runtime;
-using Microsoft.ServiceFabric.Services.Runtime;
 
 namespace SharingService
 {
-    /// <summary>
-    /// An instance of this class is created for each service replica by the Service Fabric runtime.
-    /// </summary>
-    internal sealed class SharingService : StatefulService
+    internal sealed class SharingService : StatelessService, ISharingService
     {
         public SharingService(StatefulServiceContext context)
             : base(context)
-        { }
-
-        /// <summary>
-        /// Optional override to create listeners (e.g., HTTP, Service Remoting, WCF, etc.) for this service replica to handle client or user requests.
-        /// </summary>
-        /// <remarks>
-        /// For more information on service communication, see https://aka.ms/servicefabricservicecommunication
-        /// </remarks>
-        /// <returns>A collection of listeners.</returns>
-        protected override IEnumerable<ServiceReplicaListener> CreateServiceReplicaListeners()
         {
-            return new ServiceReplicaListener[0];
         }
 
-        /// <summary>
-        /// This is the main entry point for your service replica.
-        /// This method executes when this replica of your service becomes primary and has write status.
-        /// </summary>
-        /// <param name="cancellationToken">Canceled when Service Fabric needs to shut down this service replica.</param>
+        protected override IEnumerable<ServiceReplicaListener> CreateServiceInstanceListeners()
+        {
+            return this.CreateServiceRemotingReplicaListeners();
+        }
+
         protected override async Task RunAsync(CancellationToken cancellationToken)
         {
-            // TODO: Replace the following sample code with your own logic 
-            //       or remove this RunAsync override if it's not needed in your service.
-
-            var myDictionary = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, long>>("myDictionary");
-
-            while (true)
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                ServiceEventSource.Current.ServiceMessage(
+                    this.Context,
+                    "SharingService RunAsync started"
+                );
 
-                using (var tx = this.StateManager.CreateTransaction())
+                if (this.StateManager == null)
                 {
-                    var result = await myDictionary.TryGetValueAsync(tx, "Counter");
-
-                    ServiceEventSource.Current.ServiceMessage(this.Context, "Current Counter Value: {0}",
-                        result.HasValue ? result.Value.ToString() : "Value does not exist.");
-
-                    await myDictionary.AddOrUpdateAsync(tx, "Counter", 0, (key, value) => ++value);
-
-                    // If an exception is thrown before calling CommitAsync, the transaction aborts, all changes are 
-                    // discarded, and nothing is saved to the secondary replicas.
-                    await tx.CommitAsync();
+                    ServiceEventSource.Current.ServiceMessage(
+                        this.Context,
+                        "ERROR: StateManager is null!"
+                    );
+                    throw new InvalidOperationException("StateManager is not initialized");
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                ServiceEventSource.Current.ServiceMessage(
+                    this.Context,
+                    "SharingService initialized successfully"
+                );
+
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceEventSource.Current.ServiceMessage(
+                    this.Context,
+                    $"SharingService ERROR: {ex.GetType().Name} - {ex.Message}\n{ex.StackTrace}"
+                );
+
+                throw;
             }
         }
+
+        #region ISharingService Implementation
+
+        public async Task<ServiceResult<SharingTokenDto>> CreateSharingToken(int userId, CreateSharingTokenDto dto)
+        {
+            try
+            {
+                var repository = new SharingTokenRepository(this.StateManager);
+                var service = new SharingTokenImplementation(repository);
+
+                return await service.CreateSharingToken(userId, dto);
+            }
+            catch (Exception ex)
+            {
+                ServiceEventSource.Current.ServiceMessage(
+                    this.Context,
+                    $"CreateSharingToken ERROR: {ex.Message}"
+                );
+                return ServiceResult<SharingTokenDto>.FailureResult($"Failed to create sharing token: {ex.Message}");
+            }
+        }
+
+        public async Task<ServiceResult<SharingTokenDto>> GetSharingToken(string token)
+        {
+            try
+            {
+                var repository = new SharingTokenRepository(this.StateManager);
+                var service = new SharingTokenImplementation(repository);
+
+                return await service.GetSharingToken(token);
+            }
+            catch (Exception ex)
+            {
+                ServiceEventSource.Current.ServiceMessage(
+                    this.Context,
+                    $"GetSharingToken ERROR: {ex.Message}"
+                );
+                return ServiceResult<SharingTokenDto>.FailureResult($"Failed to get sharing token: {ex.Message}");
+            }
+        }
+
+        public async Task<ServiceResult<List<SharingTokenDto>>> GetUserSharingTokens(int userId)
+        {
+            try
+            {
+                var repository = new SharingTokenRepository(this.StateManager);
+                var service = new SharingTokenImplementation(repository);
+
+                return await service.GetUserSharingTokens(userId);
+            }
+            catch (Exception ex)
+            {
+                ServiceEventSource.Current.ServiceMessage(
+                    this.Context,
+                    $"GetUserSharingTokens ERROR: {ex.Message}"
+                );
+                return ServiceResult<List<SharingTokenDto>>.FailureResult($"Failed to get user tokens: {ex.Message}");
+            }
+        }
+
+        public async Task<ServiceResult<bool>> RevokeSharingToken(string token, int userId)
+        {
+            try
+            {
+                var repository = new SharingTokenRepository(this.StateManager);
+                var service = new SharingTokenImplementation(repository);
+
+                return await service.RevokeSharingToken(token, userId);
+            }
+            catch (Exception ex)
+            {
+                ServiceEventSource.Current.ServiceMessage(
+                    this.Context,
+                    $"RevokeSharingToken ERROR: {ex.Message}"
+                );
+                return ServiceResult<bool>.FailureResult($"Failed to revoke token: {ex.Message}");
+            }
+        }
+
+        public async Task<ServiceResult<bool>> ValidateSharingToken(ValidateSharingTokenDto dto)
+        {
+            try
+            {
+                var repository = new SharingTokenRepository(this.StateManager);
+                var service = new SharingTokenImplementation(repository);
+
+                return await service.ValidateSharingToken(dto);
+            }
+            catch (Exception ex)
+            {
+                ServiceEventSource.Current.ServiceMessage(
+                    this.Context,
+                    $"ValidateSharingToken ERROR: {ex.Message}"
+                );
+                return ServiceResult<bool>.FailureResult($"Failed to validate token: {ex.Message}");
+            }
+        }
+
+        #endregion
     }
 }

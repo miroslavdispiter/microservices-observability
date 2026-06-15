@@ -10,12 +10,16 @@ import { ExpensesPage } from "./pages/expense/ExpensesPage";
 import { ChecklistPage } from "./pages/checklist/ChecklistPage";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import { AdminTravelPlansPage } from "./pages/admin/AdminTravelPlansPage";
+import { SharedPlanPage } from "./pages/sharing/SharedPlanPage";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+
+      {/* Shared Plan - NO AUTH REQUIRED */}
+      <Route path="/shared/:token" element={<SharedPlanPage />} />
 
       <Route
         path="/travels"

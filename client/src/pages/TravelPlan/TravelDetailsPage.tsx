@@ -5,16 +5,20 @@ import { destinationApi } from "../../api/destination/DestinationAPIService";
 import { activityApi } from "../../api/activity/ActivityAPIService";
 import { expenseApi } from "../../api/expense/ExpenseAPIService";
 import { checklistApi } from "../../api/checklist/ChecklistAPIService";
+import { sharingApi } from "../../api/sharing/SharingAPIService";
 import { Navbar } from "../../components/Navbar";
 import { DestinationOverview } from "../../components/destination/DestinationOverview";
 import { ActivityOverview } from "../../components/activity/ActivityOverview";
 import { ExpenseOverview } from "../../components/expense/ExpenseOverview";
 import { ChecklistOverview } from "../../components/checklist/ChecklistOverview";
+import { ShareTravelPlanModal } from "../../components/sharing/ShareTravelPlanModal";
 import type { TravelPlan } from "../../models/travel/TravelPlan";
 import type { Destination } from "../../models/travel/Destination";
 import type { Activity } from "../../models/travel/Activity";
 import type { BudgetSummary } from "../../models/travel/BudgetSummary";
 import type { ChecklistItem } from "../../models/travel/ChecklistItem";
+import type { CreateSharingTokenDto } from "../../dtos/sharing/CreateSharingTokenDto";
+import type { SharingToken } from "../../models/sharing/SharingToken";
 
 export const TravelDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +34,7 @@ export const TravelDetailsPage = () => {
   const [isBudgetLoading, setIsBudgetLoading] = useState(false);
   const [isChecklistLoading, setIsChecklistLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   useEffect(() => {
     loadPlan();
@@ -113,6 +118,10 @@ export const TravelDetailsPage = () => {
     } finally {
       setIsChecklistLoading(false);
     }
+  };
+
+  const handleShare = async (data: CreateSharingTokenDto): Promise<SharingToken> => {
+    return await sharingApi.createSharingToken(data);
   };
 
   const formatDate = (dateStr: string) => {
@@ -214,7 +223,35 @@ export const TravelDetailsPage = () => {
         {/* Header Section */}
         <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-purple-100 overflow-hidden mb-8">
           <div className="bg-gradient-to-r from-violet-500 to-indigo-500 text-white px-8 py-8">
-            <h1 className="text-4xl font-bold mb-4">{plan.title}</h1>
+            {/* Title Row sa Share dugmetom */}
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
+              <h1 className="text-4xl font-bold">{plan.title}</h1>
+
+              {/* Share Button */}
+              <button
+                onClick={() => setIsShareModalOpen(true)}
+                className="flex-shrink-0 bg-white/20 hover:bg-white/30 text-white 
+                           px-5 py-2.5 rounded-xl font-semibold transition-all 
+                           flex items-center gap-2 border-2 border-white/30
+                           hover:border-white/50 hover:scale-105"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                  />
+                </svg>
+                Share Plan
+              </button>
+            </div>
+
             <div className="flex flex-wrap gap-6 text-white/90">
               <div className="flex items-center gap-2">
                 <svg
@@ -441,9 +478,7 @@ export const TravelDetailsPage = () => {
                 </svg>
                 Destinations
               </h2>
-              <p className="text-white/80 text-sm mt-1">
-                Places you'll visit
-              </p>
+              <p className="text-white/80 text-sm mt-1">Places you'll visit</p>
             </div>
             <div className="p-6">
               <DestinationOverview
@@ -505,9 +540,7 @@ export const TravelDetailsPage = () => {
                 </svg>
                 Expenses
               </h2>
-              <p className="text-white/80 text-sm mt-1">
-                Track your spending
-              </p>
+              <p className="text-white/80 text-sm mt-1">Track your spending</p>
             </div>
             <div className="p-6">
               <ExpenseOverview
@@ -549,6 +582,15 @@ export const TravelDetailsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Share Modal */}
+      <ShareTravelPlanModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        onGenerate={handleShare}
+        travelPlanId={parseInt(id!)}
+        travelPlanTitle={plan?.title || ""}
+      />
     </div>
   );
 };

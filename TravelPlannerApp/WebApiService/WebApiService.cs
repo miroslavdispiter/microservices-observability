@@ -27,13 +27,17 @@ namespace WebApiService
 
                         var builder = WebApplication.CreateBuilder();
 
+                        var configPackagePath = serviceContext.CodePackageActivationContext
+                            .GetConfigurationPackageObject("Config").Path;
+
                         builder.Configuration
-                           .SetBasePath(Directory.GetCurrentDirectory())
-                           .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                            .SetBasePath(configPackagePath)
+                            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
                         builder.Services.AddSingleton<StatelessServiceContext>(serviceContext);
                         builder.Services.AddScoped<TravelServiceProxy>();
                         builder.Services.AddScoped<UserServiceProxy>();
+                        builder.Services.AddScoped<SharingServiceProxy>();
 
                         builder.WebHost
                             .UseKestrel()

@@ -36,7 +36,6 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SharingService\SharingService.csproj" />
     <ProjectReference Include="..\TravelService\TravelService.csproj" />
     <ProjectReference Include="..\UserService\UserService.csproj" />
     <ProjectReference Include="..\WebApiService\WebApiService.csproj">
