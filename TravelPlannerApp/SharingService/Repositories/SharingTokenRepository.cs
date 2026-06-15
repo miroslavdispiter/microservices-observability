@@ -1,6 +1,5 @@
 ﻿using Microsoft.ServiceFabric.Data;
 using Microsoft.ServiceFabric.Data.Collections;
-using SharingService.Interfaces;
 using SharingService.Models;
 using System;
 using System.Collections.Generic;
@@ -20,71 +19,81 @@ namespace SharingService.Repositories
             _stateManager = stateManager;
         }
 
-        public async Task<SharingTokenData> CreateAsync(SharingTokenData tokenData)
+        public async Task<SharingToken> CreateAsync(SharingToken token)
         {
-            var dictionary = await _stateManager.GetOrAddAsync<IReliableDictionary<string, SharingTokenData>>(DictionaryName);
+            var tokens = await _stateManager.GetOrAddAsync<IReliableDictionary<string, SharingToken>>(DictionaryName);
 
             using (var tx = _stateManager.CreateTransaction())
             {
-                await dictionary.AddAsync(tx, tokenData.Token, tokenData);
+                await tokens.AddAsync(tx, token.Token, token);
                 await tx.CommitAsync();
             }
 
-            return tokenData;
+            return token;
         }
 
-        public async Task<SharingTokenData> GetByTokenAsync(string token)
+        public async Task<SharingToken> GetByTokenAsync(string token)
         {
-            var dictionary = await _stateManager.GetOrAddAsync<IReliableDictionary<string, SharingTokenData>>(DictionaryName);
+            var tokens = await _stateManager.GetOrAddAsync<IReliableDictionary<string, SharingToken>>(DictionaryName);
 
             using (var tx = _stateManager.CreateTransaction())
             {
-                var result = await dictionary.TryGetValueAsync(tx, token);
+                var result = await tokens.TryGetValueAsync(tx, token);
                 return result.HasValue ? result.Value : null;
             }
         }
 
-        public async Task<List<SharingTokenData>> GetByOwnerIdAsync(int ownerId)
+        public async Task<List<SharingToken>> GetByOwnerIdAsync(int ownerId)
         {
-            var dictionary = await _stateManager.GetOrAddAsync<IReliableDictionary<string, SharingTokenData>>(DictionaryName);
-            var tokens = new List<SharingTokenData>();
+            var tokens = await _stateManager.GetOrAddAsync<IReliableDictionary<string, SharingToken>>(DictionaryName);
 
             using (var tx = _stateManager.CreateTransaction())
             {
-                var enumerable = await dictionary.CreateEnumerableAsync(tx);
+                var enumerable = await tokens.CreateEnumerableAsync(tx);
                 var enumerator = enumerable.GetAsyncEnumerator();
+
+                var result = new List<SharingToken>();
 
                 while (await enumerator.MoveNextAsync(CancellationToken.None))
                 {
                     if (enumerator.Current.Value.OwnerId == ownerId)
                     {
-                        tokens.Add(enumerator.Current.Value);
+                        result.Add(enumerator.Current.Value);
                     }
                 }
-            }
 
-            return tokens;
+                return result;
+            }
         }
 
         public async Task<bool> RevokeAsync(string token)
         {
-            var dictionary = await _stateManager.GetOrAddAsync<IReliableDictionary<string, SharingTokenData>>(DictionaryName);
+            var tokens = await _stateManager.GetOrAddAsync<IReliableDictionary<string, SharingToken>>(DictionaryName);
 
             using (var tx = _stateManager.CreateTransaction())
             {
-                var result = await dictionary.TryRemoveAsync(tx, token);
+                var existing = await tokens.TryGetValueAsync(tx, token);
+                if (!existing.HasValue)
+                    return false;
+
+                var updated = existing.Value;
+                updated.IsRevoked = true;
+
+                await tokens.SetAsync(tx, token, updated);
                 await tx.CommitAsync();
-                return result.HasValue;
+
+                return true;
             }
         }
 
         public async Task<bool> ExistsAsync(string token)
         {
-            var dictionary = await _stateManager.GetOrAddAsync<IReliableDictionary<string, SharingTokenData>>(DictionaryName);
+            var tokens = await _stateManager.GetOrAddAsync<IReliableDictionary<string, SharingToken>>(DictionaryName);
 
             using (var tx = _stateManager.CreateTransaction())
             {
-                return await dictionary.ContainsKeyAsync(tx, token);
+                var result = await tokens.ContainsKeyAsync(tx, token);
+                return result;
             }
         }
     }

@@ -9,12 +9,14 @@ interface ActivityOverviewProps {
   activities: Activity[];
   travelPlanId: number;
   isLoading?: boolean;
+  isReadOnly?: boolean;
 }
 
 export const ActivityOverview = ({
   activities,
   travelPlanId,
   isLoading = false,
+  isReadOnly = false, 
 }: ActivityOverviewProps) => {
   const navigate = useNavigate();
 
@@ -61,17 +63,18 @@ export const ActivityOverview = ({
       <div className="text-center py-8">
         <div className="text-5xl mb-3">🎯</div>
         <p className="text-gray-500 mb-4">No activities planned yet</p>
-        <button
-          onClick={() => navigate(`/travels/${travelPlanId}/activities`)}
-          className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
-        >
-          Plan your first activity →
-        </button>
+        {!isReadOnly && (  // ← DODATO
+          <button
+            onClick={() => navigate(`/travels/${travelPlanId}/activities`)}
+            className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+          >
+            Plan your first activity →
+          </button>
+        )}
       </div>
     );
   }
 
-  // Group activities by date
   const groupedByDate = activities.reduce((acc, activity) => {
     const date = activity.date.split("T")[0];
     if (!acc[date]) acc[date] = [];
@@ -145,14 +148,16 @@ export const ActivityOverview = ({
         </p>
       )}
 
-      <button
-        onClick={() => navigate(`/travels/${travelPlanId}/activities`)}
-        className="w-full py-3 text-indigo-600 hover:text-indigo-700 font-medium text-sm
-                   hover:bg-indigo-50 rounded-xl transition-colors border-2 border-dashed 
-                   border-indigo-300 hover:border-indigo-400"
-      >
-        Manage Activities →
-      </button>
+      {!isReadOnly && (  // ← DODATO
+        <button
+          onClick={() => navigate(`/travels/${travelPlanId}/activities`)}
+          className="w-full py-3 text-indigo-600 hover:text-indigo-700 font-medium text-sm
+                     hover:bg-indigo-50 rounded-xl transition-colors border-2 border-dashed 
+                     border-indigo-300 hover:border-indigo-400"
+        >
+          Manage Activities →
+        </button>
+      )}
     </div>
   );
 };

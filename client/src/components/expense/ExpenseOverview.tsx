@@ -5,12 +5,14 @@ interface ExpenseOverviewProps {
   budgetSummary: BudgetSummary | null;
   travelPlanId: number;
   isLoading?: boolean;
+  isReadOnly?: boolean;
 }
 
 export const ExpenseOverview = ({
   budgetSummary,
   travelPlanId,
   isLoading = false,
+  isReadOnly = false,
 }: ExpenseOverviewProps) => {
   const navigate = useNavigate();
 
@@ -45,12 +47,14 @@ export const ExpenseOverview = ({
       <div className="text-center py-8">
         <div className="text-5xl mb-3">💰</div>
         <p className="text-gray-500 mb-4">No expenses tracked yet</p>
-        <button
-          onClick={() => navigate(`/travels/${travelPlanId}/expenses`)}
-          className="text-emerald-600 hover:text-emerald-700 font-medium text-sm"
-        >
-          Start tracking expenses →
-        </button>
+        {!isReadOnly && (  // ← DODATO
+          <button
+            onClick={() => navigate(`/travels/${travelPlanId}/expenses`)}
+            className="text-emerald-600 hover:text-emerald-700 font-medium text-sm"
+          >
+            Start tracking expenses →
+          </button>
+        )}
       </div>
     );
   }
@@ -147,14 +151,16 @@ export const ExpenseOverview = ({
         </div>
       )}
 
-      <button
-        onClick={() => navigate(`/travels/${travelPlanId}/expenses`)}
-        className="w-full py-3 text-emerald-600 hover:text-emerald-700 font-medium text-sm
-                   hover:bg-emerald-50 rounded-xl transition-colors border-2 border-dashed 
-                   border-emerald-300 hover:border-emerald-400"
-      >
-        Manage Expenses →
-      </button>
+      {!isReadOnly && (  // ← DODATO
+        <button
+          onClick={() => navigate(`/travels/${travelPlanId}/expenses`)}
+          className="w-full py-3 text-emerald-600 hover:text-emerald-700 font-medium text-sm
+                     hover:bg-emerald-50 rounded-xl transition-colors border-2 border-dashed 
+                     border-emerald-300 hover:border-emerald-400"
+        >
+          Manage Expenses →
+        </button>
+      )}
     </div>
   );
 };

@@ -1,4 +1,5 @@
-﻿using Microsoft.ServiceFabric.Services.Remoting.Client;
+﻿using Microsoft.ServiceFabric.Services.Client;
+using Microsoft.ServiceFabric.Services.Remoting.Client;
 using Shared.Interfaces;
 using System;
 
@@ -8,7 +9,8 @@ namespace WebAPIService.Services
     {
         public ISharingService GetSharingServiceProxy()
             => ServiceProxy.Create<ISharingService>(
-                new Uri("fabric:/TravelPlannerApp/SharingService")
+                new Uri("fabric:/TravelPlannerApp/SharingService"),
+                new ServicePartitionKey(0)
             );
     }
 }

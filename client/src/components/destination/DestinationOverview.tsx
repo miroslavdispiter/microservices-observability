@@ -5,12 +5,14 @@ interface DestinationOverviewProps {
   destinations: Destination[];
   travelPlanId: number;
   isLoading?: boolean;
+  isReadOnly?: boolean;
 }
 
 export const DestinationOverview = ({
   destinations,
   travelPlanId,
   isLoading = false,
+  isReadOnly = false,
 }: DestinationOverviewProps) => {
   const navigate = useNavigate();
 
@@ -60,12 +62,14 @@ export const DestinationOverview = ({
       <div className="text-center py-8">
         <div className="text-5xl mb-3">📍</div>
         <p className="text-gray-500 mb-4">No destinations added yet</p>
-        <button
-          onClick={() => navigate(`/travels/${travelPlanId}/destinations`)}
-          className="text-teal-600 hover:text-teal-700 font-medium text-sm"
-        >
-          Add your first destination →
-        </button>
+        {!isReadOnly && (  // ← DODATO
+          <button
+            onClick={() => navigate(`/travels/${travelPlanId}/destinations`)}
+            className="text-teal-600 hover:text-teal-700 font-medium text-sm"
+          >
+            Add your first destination →
+          </button>
+        )}
       </div>
     );
   }
@@ -126,14 +130,16 @@ export const DestinationOverview = ({
         </div>
       ))}
 
-      <button
-        onClick={() => navigate(`/travels/${travelPlanId}/destinations`)}
-        className="w-full py-3 text-teal-600 hover:text-teal-700 font-medium text-sm
-                   hover:bg-teal-50 rounded-xl transition-colors border-2 border-dashed 
-                   border-teal-300 hover:border-teal-400"
-      >
-        Manage Destinations →
-      </button>
+      {!isReadOnly && (  // ← DODATO
+        <button
+          onClick={() => navigate(`/travels/${travelPlanId}/destinations`)}
+          className="w-full py-3 text-teal-600 hover:text-teal-700 font-medium text-sm
+                     hover:bg-teal-50 rounded-xl transition-colors border-2 border-dashed 
+                     border-teal-300 hover:border-teal-400"
+        >
+          Manage Destinations →
+        </button>
+      )}
     </div>
   );
 };

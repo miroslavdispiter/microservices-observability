@@ -1,3 +1,5 @@
+import type { ChangePasswordDto } from "../../dtos/user/ChangePasswordDto";
+import type { UpdateUserDto } from "../../dtos/user/UpdateUserDto";
 import type { TravelPlan } from "../../models/travel/TravelPlan";
 import type { User } from "../../models/user/User";
 

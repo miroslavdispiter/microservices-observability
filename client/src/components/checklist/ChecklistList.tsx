@@ -11,6 +11,7 @@ interface ChecklistListProps {
   onDelete: (id: number) => void;
   onToggle: (id: number) => void;
   isLoading?: boolean;
+  isReadOnly?: boolean;
 }
 
 export const ChecklistList = ({
@@ -19,6 +20,7 @@ export const ChecklistList = ({
   onDelete,
   onToggle,
   isLoading = false,
+  isReadOnly = false,
 }: ChecklistListProps) => {
   if (isLoading) {
     return (
@@ -76,12 +78,13 @@ export const ChecklistList = ({
         {/* Checkbox */}
         <button
           onClick={() => onToggle(item.id)}
+          disabled={isReadOnly}
           className={`flex-shrink-0 w-6 h-6 rounded-lg border-2 flex items-center justify-center
                      transition-all ${
                        item.isCompleted
                          ? "bg-green-500 border-green-500"
                          : "border-gray-300 hover:border-orange-500"
-                     }`}
+                     } ${isReadOnly ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
         >
           {item.isCompleted && (
             <svg
@@ -133,56 +136,58 @@ export const ChecklistList = ({
           )}
 
           {/* Actions */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => onEdit(item)}
-              className="bg-orange-50 hover:bg-orange-100 text-orange-600 px-3 py-1.5 rounded-lg
-                         font-medium transition-colors text-sm flex items-center gap-1"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+          {!isReadOnly && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => onEdit(item)}
+                className="bg-orange-50 hover:bg-orange-100 text-orange-600 px-3 py-1.5 rounded-lg
+                           font-medium transition-colors text-sm flex items-center gap-1"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-              Edit
-            </button>
-            <button
-              onClick={() => {
-                if (
-                  window.confirm(
-                    `Are you sure you want to delete "${item.name}"?`
-                  )
-                ) {
-                  onDelete(item.id);
-                }
-              }}
-              className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg
-                         font-medium transition-colors text-sm flex items-center gap-1"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+                Edit
+              </button>
+              <button
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Are you sure you want to delete "${item.name}"?`
+                    )
+                  ) {
+                    onDelete(item.id);
+                  }
+                }}
+                className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg
+                           font-medium transition-colors text-sm flex items-center gap-1"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-              Delete
-            </button>
-          </div>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                Delete
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

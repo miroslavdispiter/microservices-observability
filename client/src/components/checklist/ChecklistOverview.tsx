@@ -5,12 +5,14 @@ interface ChecklistOverviewProps {
   items: ChecklistItem[];
   travelPlanId: number;
   isLoading?: boolean;
+  isReadOnly?: boolean;
 }
 
 export const ChecklistOverview = ({
   items,
   travelPlanId,
   isLoading = false,
+  isReadOnly = false,
 }: ChecklistOverviewProps) => {
   const navigate = useNavigate();
 
@@ -45,12 +47,14 @@ export const ChecklistOverview = ({
       <div className="text-center py-8">
         <div className="text-5xl mb-3">📋</div>
         <p className="text-gray-500 mb-4">No checklist items yet</p>
-        <button
-          onClick={() => navigate(`/travels/${travelPlanId}/checklist`)}
-          className="text-orange-600 hover:text-orange-700 font-medium text-sm"
-        >
-          Create your packing list →
-        </button>
+        {!isReadOnly && (  // ← DODATO
+          <button
+            onClick={() => navigate(`/travels/${travelPlanId}/checklist`)}
+            className="text-orange-600 hover:text-orange-700 font-medium text-sm"
+          >
+            Create your packing list →
+          </button>
+        )}
       </div>
     );
   }
@@ -142,14 +146,16 @@ export const ChecklistOverview = ({
         </div>
       </div>
 
-      <button
-        onClick={() => navigate(`/travels/${travelPlanId}/checklist`)}
-        className="w-full py-3 text-orange-600 hover:text-orange-700 font-medium text-sm
-                   hover:bg-orange-50 rounded-xl transition-colors border-2 border-dashed 
-                   border-orange-300 hover:border-orange-400"
-      >
-        Manage Checklist →
-      </button>
+      {!isReadOnly && (  // ← DODATO
+        <button
+          onClick={() => navigate(`/travels/${travelPlanId}/checklist`)}
+          className="w-full py-3 text-orange-600 hover:text-orange-700 font-medium text-sm
+                     hover:bg-orange-50 rounded-xl transition-colors border-2 border-dashed 
+                     border-orange-300 hover:border-orange-400"
+        >
+          Manage Checklist →
+        </button>
+      )}
     </div>
   );
 };

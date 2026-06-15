@@ -11,6 +11,8 @@ import { ChecklistPage } from "./pages/checklist/ChecklistPage";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import { AdminTravelPlansPage } from "./pages/admin/AdminTravelPlansPage";
 import { SharedPlanPage } from "./pages/sharing/SharedPlanPage";
+import { SharedPlanProvider } from "./contexts/sharing/SharedPlanContext";
+import { SharedPlanLayout } from "./components/SharedPlanLayout";
 
 export default function App() {
   return (
@@ -18,9 +20,23 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Shared Plan - NO AUTH REQUIRED */}
-      <Route path="/shared/:token" element={<SharedPlanPage />} />
+      {/* Shared Plan Routes - NO AUTH REQUIRED */}
+      <Route
+        path="/shared/:token/*"
+        element={
+          <SharedPlanProvider>
+            <SharedPlanLayout />
+          </SharedPlanProvider>
+        }
+      >
+        <Route index element={<SharedPlanPage />} />
+        <Route path="destinations" element={<DestinationsPage isShared />} />
+        <Route path="activities" element={<ActivitiesPage isShared />} />
+        <Route path="expenses" element={<ExpensesPage isShared />} />
+        <Route path="checklist" element={<ChecklistPage isShared />} />
+      </Route>
 
+      {/* Protected Routes */}
       <Route
         path="/travels"
         element={
