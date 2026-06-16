@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext, type ReactNode } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { sharingApi } from "../../api/sharing/SharingAPIService";
 import { travelApi } from "../../api/travelPlan/TravelPlanAPIService";
 import type { SharingToken } from "../../models/sharing/SharingToken";
@@ -17,7 +17,6 @@ const SharedPlanContext = createContext<SharedPlanContextType | null>(null);
 
 export const SharedPlanProvider = ({ children }: { children: ReactNode }) => {
   const { token } = useParams<{ token: string }>();
-  const navigate = useNavigate();
   const [sharingToken, setSharingToken] = useState<SharingToken | null>(null);
   const [plan, setPlan] = useState<TravelPlan | null>(null);
   const [isLoading, setIsLoading] = useState(true);

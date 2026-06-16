@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { Expense, ExpenseCategory, ExpenseCategoryLabels } from "../../models/travel/Expense";
+import type { Expense } from "../../models/travel/Expense";
 import type { CreateExpenseDto } from "../../dtos/expense/CreateExpenseDto";
 
 interface ExpenseModalProps {

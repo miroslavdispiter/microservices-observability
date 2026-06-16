@@ -83,7 +83,6 @@ namespace UserService.Services
                     return ServiceResult<bool>.FailureResult("User not found.");
                 }
 
-                // Check if username is being changed and if it's already taken
                 if (dto.Username != user.Username)
                 {
                     var existingUser = await _userRepository.GetByUsernameAsync(dto.Username);
@@ -93,7 +92,6 @@ namespace UserService.Services
                     }
                 }
 
-                // Check if email is being changed and if it's already taken
                 if (dto.Email != user.Email)
                 {
                     var existingUser = await _userRepository.GetByEmailAsync(dto.Email);

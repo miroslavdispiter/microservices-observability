@@ -14,7 +14,6 @@ export const LoginForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState("");
 
-  // ✅ REDIRECT AKO JE VEĆ ULOGOVAN
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       navigate("/travels", { replace: true });

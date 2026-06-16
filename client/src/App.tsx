@@ -20,7 +20,7 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Shared Plan Routes - NO AUTH REQUIRED */}
+      {/* Shared Plan Routes */}
       <Route
         path="/shared/:token/*"
         element={

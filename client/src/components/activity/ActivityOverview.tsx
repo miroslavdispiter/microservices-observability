@@ -148,7 +148,7 @@ export const ActivityOverview = ({
         </p>
       )}
 
-      {!isReadOnly && (  // ← DODATO
+      {!isReadOnly && (
         <button
           onClick={() => navigate(`/travels/${travelPlanId}/activities`)}
           className="w-full py-3 text-indigo-600 hover:text-indigo-700 font-medium text-sm

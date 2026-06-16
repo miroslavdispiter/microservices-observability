@@ -20,8 +20,6 @@ namespace WebAPIService.Controllers
             _travelProxy = travelProxy;
         }
 
-        #region User Management
-
         [HttpGet("users")]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -91,10 +89,6 @@ namespace WebAPIService.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
-        #endregion
-
-        #region Travel Plans Management
-
         [HttpGet("travel-plans")]
         public async Task<IActionResult> GetAllTravelPlans()
         {
@@ -103,7 +97,5 @@ namespace WebAPIService.Controllers
 
             return result.Success ? Ok(result) : BadRequest(result);
         }
-
-        #endregion
     }
 }

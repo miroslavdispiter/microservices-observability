@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useSharedPlan } from "../../contexts/sharing/SharedPlanContext";
 import { destinationApi } from "../../api/destination/DestinationAPIService";
 import { activityApi } from "../../api/activity/ActivityAPIService";
@@ -16,7 +15,6 @@ import type { ChecklistItem } from "../../models/travel/ChecklistItem";
 
 export const SharedPlanPage = () => {
   const { plan, isViewOnly } = useSharedPlan();
-  const navigate = useNavigate();
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [budgetSummary, setBudgetSummary] = useState<BudgetSummary | null>(null);

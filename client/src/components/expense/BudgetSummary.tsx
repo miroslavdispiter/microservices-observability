@@ -1,5 +1,4 @@
 import type { BudgetSummary as BudgetSummaryModel } from "../../models/travel/BudgetSummary";
-import { ExpenseCategoryIcons } from "../../models/travel/Expense";
 
 interface BudgetSummaryProps {
   summary: BudgetSummaryModel | null;

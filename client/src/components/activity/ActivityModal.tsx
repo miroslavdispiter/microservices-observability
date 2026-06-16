@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { Activity, ActivityStatus } from "../../models/travel/Activity";
+import type { Activity } from "../../models/travel/Activity";
 import type { CreateActivityDto } from "../../dtos/activity/CreateActivityDto";
 
 interface ActivityModalProps {

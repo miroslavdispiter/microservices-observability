@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { Activity } from "../../models/travel/Activity";
-import { ActivityStatusColors } from "../../models/travel/Activity";
 
 interface ActivityCalendarProps {
   activities: Activity[];
@@ -168,7 +167,7 @@ export const ActivityCalendar = ({
               <div className="text-sm font-semibold">{day}</div>
               {dayActivities.length > 0 && (
                 <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
-                  {dayActivities.slice(0, 3).map((activity, idx) => (
+                  {dayActivities.slice(0, 3).map((_activity, idx) => (
                     <div
                       key={idx}
                       className="w-1.5 h-1.5 rounded-full bg-indigo-500"

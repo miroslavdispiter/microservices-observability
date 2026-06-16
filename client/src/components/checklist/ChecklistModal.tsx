@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { ChecklistItem, ChecklistPriority } from "../../models/travel/ChecklistItem";
+import type { ChecklistItem } from "../../models/travel/ChecklistItem";
 import type { CreateChecklistItemDto } from "../../dtos/checklist/CreateChecklistItemDto";
 
 interface ChecklistModalProps {

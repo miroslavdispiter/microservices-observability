@@ -12,6 +12,7 @@ import { ActivityOverview } from "../../components/activity/ActivityOverview";
 import { ExpenseOverview } from "../../components/expense/ExpenseOverview";
 import { ChecklistOverview } from "../../components/checklist/ChecklistOverview";
 import { ShareTravelPlanModal } from "../../components/sharing/ShareTravelPlanModal";
+import { generateTravelPlanPDF } from "../../utils/pdfGenerator";
 import type { TravelPlan } from "../../models/travel/TravelPlan";
 import type { Destination } from "../../models/travel/Destination";
 import type { Activity } from "../../models/travel/Activity";
@@ -35,6 +36,7 @@ export const TravelDetailsPage = () => {
   const [isChecklistLoading, setIsChecklistLoading] = useState(false);
   const [error, setError] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isPDFGenerating, setIsPDFGenerating] = useState(false);
 
   useEffect(() => {
     loadPlan();
@@ -122,6 +124,25 @@ export const TravelDetailsPage = () => {
 
   const handleShare = async (data: CreateSharingTokenDto): Promise<SharingToken> => {
     return await sharingApi.createSharingToken(data);
+  };
+
+  const handleGeneratePDF = async () => {
+    if (!plan) return;
+
+    try {
+      setIsPDFGenerating(true);
+      await generateTravelPlanPDF({
+        plan,
+        destinations,
+        activities,
+        budgetSummary,
+        checklistItems,
+      });
+    } catch (error: any) {
+      alert(error?.message || "Failed to generate PDF report");
+    } finally {
+      setIsPDFGenerating(false);
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -223,33 +244,88 @@ export const TravelDetailsPage = () => {
         {/* Header Section */}
         <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-purple-100 overflow-hidden mb-8">
           <div className="bg-gradient-to-r from-violet-500 to-indigo-500 text-white px-8 py-8">
-            {/* Title Row sa Share dugmetom */}
+            {/* Title Row sa Share i PDF dugmićima */}
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
               <h1 className="text-4xl font-bold">{plan.title}</h1>
 
-              {/* Share Button */}
-              <button
-                onClick={() => setIsShareModalOpen(true)}
-                className="flex-shrink-0 bg-white/20 hover:bg-white/30 text-white 
-                           px-5 py-2.5 rounded-xl font-semibold transition-all 
-                           flex items-center gap-2 border-2 border-white/30
-                           hover:border-white/50 hover:scale-105"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="flex flex-shrink-0 gap-3">
+                {/* Generate PDF Button */}
+                <button
+                  onClick={handleGeneratePDF}
+                  disabled={isPDFGenerating}
+                  className="bg-white/20 hover:bg-white/30 text-white 
+                             px-5 py-2.5 rounded-xl font-semibold transition-all 
+                             flex items-center gap-2 border-2 border-white/30
+                             hover:border-white/50 hover:scale-105
+                             disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                  />
-                </svg>
-                Share Plan
-              </button>
+                  {isPDFGenerating ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        />
+                      </svg>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      Export PDF
+                    </>
+                  )}
+                </button>
+
+                {/* Share Button */}
+                <button
+                  onClick={() => setIsShareModalOpen(true)}
+                  className="bg-white/20 hover:bg-white/30 text-white 
+                             px-5 py-2.5 rounded-xl font-semibold transition-all 
+                             flex items-center gap-2 border-2 border-white/30
+                             hover:border-white/50 hover:scale-105"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    />
+                  </svg>
+                  Share Plan
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-6 text-white/90">
