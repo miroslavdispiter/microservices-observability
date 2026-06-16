@@ -2,3 +2,23 @@
 bin/
 obj/
 packages/
+
+######################################
+# ENV FILES
+######################################
+
+# Ignore all .env files
+.env
+.env.*
+!.env.example
+
+######################################
+# APP SETTINGS (sensitive config)
+######################################
+
+# Ignore all appsettings files
+appsettings.json
+appsettings.*.json
+
+# Allow example config files
+!appsettings.example.json
