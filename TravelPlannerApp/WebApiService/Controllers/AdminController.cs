@@ -62,10 +62,24 @@ namespace WebAPIService.Controllers
         [HttpDelete("users/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var service = _userProxy.GetUserServiceProxy();
-            var result = await service.DeleteUser(id);
+            try
+            {
+                var travelService = _travelProxy.GetTravelPlanProxy();
+                await travelService.DeleteByUserId(id);
 
-            return result.Success ? Ok(result) : BadRequest(result);
+                var userService = _userProxy.GetUserServiceProxy();
+                var result = await userService.DeleteUser(id);
+
+                return result.Success ? Ok(result) : BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Error deleting user: {ex.Message}"
+                });
+            }
         }
 
         [HttpPatch("users/{id}/change-password")]

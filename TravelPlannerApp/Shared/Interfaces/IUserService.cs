@@ -10,8 +10,6 @@ namespace Shared.Interfaces
     {
         Task<ServiceResult<AuthResponseDto>> Register(RegisterRequestDto request);
         Task<ServiceResult<AuthResponseDto>> Login(LoginRequestDto request);
-
-        // Admin funkcionalnosti
         Task<ServiceResult<List<UserDto>>> GetAllUsers();
         Task<ServiceResult<UserDto>> GetUserById(int id);
         Task<ServiceResult<bool>> UpdateUser(int id, UpdateUserDto dto);

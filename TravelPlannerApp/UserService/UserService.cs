@@ -109,7 +109,6 @@ namespace UserService
             }
         }
 
-
         protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
         {
             return this.CreateServiceRemotingInstanceListeners();

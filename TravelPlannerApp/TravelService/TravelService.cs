@@ -43,15 +43,11 @@ namespace TravelService
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<ITravelPlanRepository, TravelPlanRepository>();
-
-            // Register repositories
-            services.AddScoped<ITravelPlanRepository, TravelPlanRepository>();
             services.AddScoped<IDestinationRepository, DestinationRepository>();
             services.AddScoped<IActivityRepository, ActivityRepository>();
             services.AddScoped<IExpenseRepository, ExpenseRepository>();
             services.AddScoped<IChecklistRepository, ChecklistRepository>();
 
-            // Register business logic services
             services.AddScoped<ITravelService, TravelPlanImplementation>();
             services.AddScoped<IDestinationService, DestinationImplementation>();
             services.AddScoped<IActivityService, ActivityImplementation>();
@@ -114,6 +110,15 @@ namespace TravelService
             {
                 var service = scope.ServiceProvider.GetRequiredService<ITravelService>();
                 return await service.GetAllTravelPlans();
+            }
+        }
+
+        public async Task<ServiceResult<bool>> DeleteByUserId(int userId)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<ITravelService>();
+                return await service.DeleteByUserId(userId);
             }
         }
 
@@ -372,6 +377,7 @@ namespace TravelService
         {
             return this.CreateServiceRemotingInstanceListeners();
         }
+
         protected override async Task RunAsync(CancellationToken cancellationToken)
         {
             using (var scope = _serviceProvider.CreateScope())

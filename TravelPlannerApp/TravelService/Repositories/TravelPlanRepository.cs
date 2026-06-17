@@ -66,5 +66,20 @@ namespace TravelService.Repositories
                 .OrderByDescending(tp => tp.CreatedAt)
                 .ToListAsync();
         }
+
+        public async Task<bool> DeleteByUserIdAsync(int userId)
+        {
+            var plans = await _context.TravelPlans
+                .Where(tp => tp.UserId == userId)
+                .ToListAsync();
+
+            if (plans.Any())
+            {
+                _context.TravelPlans.RemoveRange(plans);
+                await _context.SaveChangesAsync();
+            }
+
+            return true;
+        }
     }
 }

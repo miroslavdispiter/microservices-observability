@@ -4,7 +4,6 @@ using Shared.DTOs.TravelPlan;
 using WebAPIService.Services;
 using WebAPIService.Validators;
 using System.Security.Claims;
-using Shared.Interfaces;
 
 namespace WebAPIService.Controllers
 {
@@ -102,6 +101,15 @@ namespace WebAPIService.Controllers
         {
             var service = _proxy.GetTravelPlanProxy();
             var result = await service.Delete(id);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpDelete("user/{userId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteByUserId(int userId)
+        {
+            var service = _proxy.GetTravelPlanProxy();
+            var result = await service.DeleteByUserId(userId);
             return result.Success ? Ok(result) : BadRequest(result);
         }
     }

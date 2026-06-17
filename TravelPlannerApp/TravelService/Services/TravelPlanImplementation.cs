@@ -155,7 +155,6 @@ namespace TravelService.Services
             }
         }
 
-        // Admin
         public async Task<ServiceResult<List<TravelPlanDto>>> GetAllTravelPlans()
         {
             try
@@ -178,6 +177,19 @@ namespace TravelService.Services
             catch (Exception ex)
             {
                 return ServiceResult<List<TravelPlanDto>>.FailureResult($"Failed to retrieve travel plans: {ex.Message}");
+            }
+        }
+
+        public async Task<ServiceResult<bool>> DeleteByUserId(int userId)
+        {
+            try
+            {
+                var result = await _repository.DeleteByUserIdAsync(userId);
+                return ServiceResult<bool>.SuccessResult(result, "User travel plans deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<bool>.FailureResult($"Failed to delete user travel plans: {ex.Message}");
             }
         }
     }

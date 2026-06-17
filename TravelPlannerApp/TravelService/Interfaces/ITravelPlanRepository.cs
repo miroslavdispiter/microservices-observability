@@ -12,7 +12,7 @@ namespace TravelService.Interfaces
         Task<bool> UpdateAsync(TravelPlan plan);
         Task<bool> DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
-
         Task<List<TravelPlan>> GetAllAsync();
+        Task<bool> DeleteByUserIdAsync(int userId);
     }
 }

@@ -8,15 +8,12 @@ namespace Shared.Interfaces
 {
     public interface ITravelService : IService
     {
-        #region TravelPlan
         Task<ServiceResult<TravelPlanDto>> Create(int userId, CreateTravelPlanDto dto);
         Task<ServiceResult<List<TravelPlanDto>>> GetAll(int userId);
         Task<ServiceResult<TravelPlanDto>> GetById(int id);
         Task<ServiceResult<bool>> Update(int id, CreateTravelPlanDto dto);
         Task<ServiceResult<bool>> Delete(int id);
-
         Task<ServiceResult<List<TravelPlanDto>>> GetAllTravelPlans();
-
-        #endregion
+        Task<ServiceResult<bool>> DeleteByUserId(int userId);
     }
 }
