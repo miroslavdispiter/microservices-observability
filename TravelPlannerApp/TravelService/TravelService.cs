@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
@@ -12,6 +15,7 @@ using Shared.DTOs.Expense;
 using Shared.DTOs.TravelPlan;
 using Shared.Interfaces;
 using System.Fabric;
+using System.Text.Json;
 using TravelService.DbContext;
 using TravelService.Interfaces;
 using TravelService.Repositories;
@@ -22,6 +26,7 @@ namespace TravelService
     internal sealed class TravelService : StatelessService, ITravelService, IDestinationService, IActivityService, IExpenseService, IChecklistService
     {
         private readonly ServiceProvider _serviceProvider;
+        private readonly IConfiguration _configuration;
 
         public TravelService(StatelessServiceContext context)
             : base(context)
@@ -36,6 +41,8 @@ namespace TravelService
             IConfiguration configuration = new ConfigurationBuilder()
                 .AddJsonFile(appSettingsPath, optional: false, reloadOnChange: true)
                 .Build();
+
+            _configuration = configuration;
 
             services.AddSingleton<IConfiguration>(configuration);
 
@@ -375,7 +382,68 @@ namespace TravelService
 
         protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
         {
-            return this.CreateServiceRemotingInstanceListeners();
+            // Remoting listener - koristi ga WebApiService za pozive poslovne logike (interno, preko fabric URI-ja).
+            var listeners = this.CreateServiceRemotingInstanceListeners().ToList();
+
+            // Potpuno odvojen HTTP listener SAMO za /health - radi na fiksnom portu (HealthEndpoint)
+            // da bi WebApiService (i drugi alati) mogli da provere zdravlje ovog servisa
+            // i njegove konekcije na TravelDb bazu.
+            listeners.Add(new ServiceInstanceListener((StatelessServiceContext serviceContext) =>
+                new KestrelCommunicationListener(serviceContext, "HealthEndpoint", (url, listener) =>
+                {
+                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting health check Kestrel on {url}");
+
+                    var builder = WebApplication.CreateBuilder();
+
+                    builder.WebHost
+                        .UseKestrel()
+                        .UseContentRoot(Directory.GetCurrentDirectory())
+                        .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
+                        .UseUrls(url);
+
+                    var connectionString = _configuration.GetConnectionString("DefaultConnection");
+
+                    builder.Services.AddHealthChecks()
+                        .AddSqlServer(
+                            connectionString: connectionString!,
+                            healthQuery: "SELECT 1;",
+                            name: "TravelDb",
+                            tags: new[] { "db", "sql", "ready" });
+
+                    var app = builder.Build();
+
+                    app.MapHealthChecks("/health", new HealthCheckOptions
+                    {
+                        ResponseWriter = WriteHealthCheckResponse
+                    });
+
+                    return app;
+                }), "HealthEndpoint"));
+
+            return listeners;
+        }
+
+        /// <summary>
+        /// Vraca detaljan JSON umesto default plain-text "Healthy"/"Unhealthy" odgovora.
+        /// </summary>
+        private static Task WriteHealthCheckResponse(HttpContext context, HealthReport report)
+        {
+            context.Response.ContentType = "application/json; charset=utf-8";
+
+            var payload = new
+            {
+                status = report.Status.ToString(),
+                totalDurationMs = report.TotalDuration.TotalMilliseconds,
+                checks = report.Entries.Select(e => new
+                {
+                    name = e.Key,
+                    status = e.Value.Status.ToString(),
+                    description = e.Value.Description,
+                    durationMs = e.Value.Duration.TotalMilliseconds
+                })
+            };
+
+            return context.Response.WriteAsync(JsonSerializer.Serialize(payload));
         }
 
         protected override async Task RunAsync(CancellationToken cancellationToken)

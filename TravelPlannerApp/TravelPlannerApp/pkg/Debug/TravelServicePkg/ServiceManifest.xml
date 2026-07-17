@@ -13,15 +13,17 @@
       </ExeHost>
     </EntryPoint>
   </CodePackage>
-  <!-- Config package is the contents of the Config directory under PackageRoot that contains an 
+  <!-- Config package is the contents of the Config directory under PackageRoot that contains an
        independently-updateable and versioned set of custom configuration settings for your service. -->
   <ConfigPackage Name="Config" Version="1.0.0" />
   <Resources>
     <Endpoints>
-      <!-- This endpoint is used by the communication listener to obtain the port on which to 
-           listen. Please note that if your service is partitioned, this port is shared with 
+      <!-- This endpoint is used by the communication listener to obtain the port on which to
+           listen. Please note that if your service is partitioned, this port is shared with
            replicas of different partitions that are placed in your code. -->
       <Endpoint Name="ServiceEndpoint" />
+      <!-- Fiksni HTTP endpoint samo za /health, odvojen od Service Remoting endpointa -->
+      <Endpoint Protocol="http" Name="HealthEndpoint" Type="Input" Port="7012" />
     </Endpoints>
   </Resources>
 </ServiceManifest>

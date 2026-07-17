@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
@@ -6,6 +8,7 @@ using Microsoft.ServiceFabric.Services.Runtime;
 using System.Fabric;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Text.Json;
 using WebAPIService.Services;
 
 namespace WebApiService
@@ -81,6 +84,38 @@ namespace WebApiService
 
                         builder.Services.AddAuthorization();
 
+                        // Health checks: osnovni gateway self-check + provera dostupnosti
+                        // UserService, TravelService i SharingService preko njihovih /health endpointa
+                        var healthChecksBuilder = builder.Services.AddHealthChecks();
+
+                        var userServiceHealthUrl = builder.Configuration["HealthChecksUrls:UserService"];
+                        var travelServiceHealthUrl = builder.Configuration["HealthChecksUrls:TravelService"];
+                        var sharingServiceHealthUrl = builder.Configuration["HealthChecksUrls:SharingService"];
+
+                        if (!string.IsNullOrWhiteSpace(userServiceHealthUrl))
+                        {
+                            healthChecksBuilder.AddUrlGroup(
+                                new Uri(userServiceHealthUrl),
+                                name: "UserService",
+                                tags: new[] { "downstream", "ready" });
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(travelServiceHealthUrl))
+                        {
+                            healthChecksBuilder.AddUrlGroup(
+                                new Uri(travelServiceHealthUrl),
+                                name: "TravelService",
+                                tags: new[] { "downstream", "ready" });
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(sharingServiceHealthUrl))
+                        {
+                            healthChecksBuilder.AddUrlGroup(
+                                new Uri(sharingServiceHealthUrl),
+                                name: "SharingService",
+                                tags: new[] { "downstream", "ready" });
+                        }
+
                         builder.Services.AddCors(options =>
                         {
                             options.AddPolicy("AllowFrontend", policy =>
@@ -139,9 +174,52 @@ namespace WebApiService
                         app.UseAuthorization();
                         app.MapControllers();
 
+                        // /health - sve provere (gateway + baze downstream servisa preko njihovih /health-ova)
+                        app.MapHealthChecks("/health", new HealthCheckOptions
+                        {
+                            ResponseWriter = WriteHealthCheckResponse
+                        });
+
+                        // /health/live - da li proces uopste radi (bez provere zavisnosti); koristi se npr. za restart odluke
+                        app.MapHealthChecks("/health/live", new HealthCheckOptions
+                        {
+                            Predicate = _ => false,
+                            ResponseWriter = WriteHealthCheckResponse
+                        });
+
+                        // /health/ready - da li je gateway spreman da opsluzuje saobracaj (baze + eksterni servisi zdravi)
+                        app.MapHealthChecks("/health/ready", new HealthCheckOptions
+                        {
+                            Predicate = check => check.Tags.Contains("ready"),
+                            ResponseWriter = WriteHealthCheckResponse
+                        });
+
                         return app;
                     }))
             };
+        }
+
+        /// <summary>
+        /// Vraca detaljan JSON umesto default plain-text "Healthy"/"Unhealthy" odgovora.
+        /// </summary>
+        private static Task WriteHealthCheckResponse(HttpContext context, HealthReport report)
+        {
+            context.Response.ContentType = "application/json; charset=utf-8";
+
+            var payload = new
+            {
+                status = report.Status.ToString(),
+                totalDurationMs = report.TotalDuration.TotalMilliseconds,
+                checks = report.Entries.Select(e => new
+                {
+                    name = e.Key,
+                    status = e.Value.Status.ToString(),
+                    description = e.Value.Description,
+                    durationMs = e.Value.Duration.TotalMilliseconds
+                })
+            };
+
+            return context.Response.WriteAsync(JsonSerializer.Serialize(payload));
         }
     }
 }

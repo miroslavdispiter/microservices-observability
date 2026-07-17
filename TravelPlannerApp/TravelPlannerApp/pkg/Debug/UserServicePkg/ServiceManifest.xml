@@ -13,7 +13,14 @@
       </ExeHost>
     </EntryPoint>
   </CodePackage>
-  <!-- Config package is the contents of the Config directory under PackageRoot that contains an 
+  <!-- Config package is the contents of the Config directory under PackageRoot that contains an
        independently-updateable and versioned set of custom configuration settings for your service. -->
   <ConfigPackage Name="Config" Version="1.0.0" />
+  <Resources>
+    <Endpoints>
+      <!-- Fiksni HTTP endpoint samo za /health, odvojen od Service Remoting endpointa. 
+	       WebApiService i drugi alati ovaj port koriste da pitaju servis da li je zdrav. -->
+      <Endpoint Protocol="http" Name="HealthEndpoint" Type="Input" Port="7011" />
+    </Endpoints>
+  </Resources>
 </ServiceManifest>

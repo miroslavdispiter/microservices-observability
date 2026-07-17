@@ -26,6 +26,8 @@
            This endpoint is configured through a ReplicatorSettings config section in the Settings.xml
            file under the ConfigPackage. -->
       <Endpoint Name="ReplicatorEndpoint" />
+      <!-- Fiksni HTTP endpoint samo za /health, odvojen od Service Remoting endpointa -->
+      <Endpoint Protocol="http" Name="HealthEndpoint" Type="Input" Port="7013" />
     </Endpoints>
   </Resources>
 </ServiceManifest>
