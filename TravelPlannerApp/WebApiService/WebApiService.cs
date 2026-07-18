@@ -5,6 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using System.Fabric;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
@@ -83,6 +85,16 @@ namespace WebApiService
                             });
 
                         builder.Services.AddAuthorization();
+
+                        // Application Metrics: OpenTelemetry meter provider koji hvata standardne
+                        // ASP.NET Core HTTP metrike (broj zahteva, trajanje, aktivni zahtevi po ruti/statusu)
+                        // i .NET runtime metrike (GC, thread pool), i izlaze ih u Prometheus formatu na /metrics.
+                        builder.Services.AddOpenTelemetry()
+                            .ConfigureResource(resource => resource.AddService(serviceName: "WebApiService"))
+                            .WithMetrics(metrics => metrics
+                                .AddAspNetCoreInstrumentation()
+                                .AddRuntimeInstrumentation()
+                                .AddPrometheusExporter());
 
                         // Health checks: osnovni gateway self-check + provera dostupnosti
                         // UserService, TravelService i SharingService preko njihovih /health endpointa
@@ -173,6 +185,9 @@ namespace WebApiService
                         app.UseAuthentication();
                         app.UseAuthorization();
                         app.MapControllers();
+
+                        // /metrics - Prometheus scrape endpoint sa HTTP i runtime metrikama (Application Metrics)
+                        app.MapPrometheusScrapingEndpoint("/metrics");
 
                         // /health - sve provere (gateway + baze downstream servisa preko njihovih /health-ova)
                         app.MapHealthChecks("/health", new HealthCheckOptions

@@ -3,10 +3,12 @@ using Shared.DTOs.User;
 using Shared.Enums;
 using UserService.Interfaces;
 using UserService.Models;
+using UserService.Observability;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace UserService.Services
 {
@@ -20,6 +22,14 @@ namespace UserService.Services
         }
 
         public async Task<ServiceResult<List<UserDto>>> GetAllUsers()
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await GetAllUsersCore();
+            UserServiceMetrics.RecordOperation("GetAllUsers", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<List<UserDto>>> GetAllUsersCore()
         {
             try
             {
@@ -45,6 +55,14 @@ namespace UserService.Services
         }
 
         public async Task<ServiceResult<UserDto>> GetUserById(int id)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await GetUserByIdCore(id);
+            UserServiceMetrics.RecordOperation("GetUserById", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<UserDto>> GetUserByIdCore(int id)
         {
             try
             {
@@ -74,6 +92,14 @@ namespace UserService.Services
         }
 
         public async Task<ServiceResult<bool>> UpdateUser(int id, UpdateUserDto dto)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await UpdateUserCore(id, dto);
+            UserServiceMetrics.RecordOperation("UpdateUser", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> UpdateUserCore(int id, UpdateUserDto dto)
         {
             try
             {
@@ -125,6 +151,14 @@ namespace UserService.Services
 
         public async Task<ServiceResult<bool>> DeleteUser(int id)
         {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await DeleteUserCore(id);
+            UserServiceMetrics.RecordOperation("DeleteUser", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> DeleteUserCore(int id)
+        {
             try
             {
                 var exists = await _userRepository.ExistsAsync(id);
@@ -146,6 +180,14 @@ namespace UserService.Services
         }
 
         public async Task<ServiceResult<bool>> ChangeUserPassword(int id, ChangePasswordDto dto)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await ChangeUserPasswordCore(id, dto);
+            UserServiceMetrics.RecordOperation("ChangeUserPassword", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> ChangeUserPasswordCore(int id, ChangePasswordDto dto)
         {
             try
             {

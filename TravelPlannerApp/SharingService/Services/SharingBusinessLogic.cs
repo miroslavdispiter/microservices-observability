@@ -1,4 +1,5 @@
 ﻿using SharingService.Models;
+using SharingService.Observability;
 using SharingService.Repositories;
 using Shared.Common;
 using Shared.DTOs.Sharing;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace SharingService.Services
 {
@@ -20,6 +22,14 @@ namespace SharingService.Services
         }
 
         public async Task<ServiceResult<SharingTokenDto>> CreateSharingToken(int userId, CreateSharingTokenDto dto)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await CreateSharingTokenCore(userId, dto);
+            SharingServiceMetrics.RecordOperation("CreateSharingToken", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<SharingTokenDto>> CreateSharingTokenCore(int userId, CreateSharingTokenDto dto)
         {
             try
             {
@@ -50,6 +60,14 @@ namespace SharingService.Services
         }
 
         public async Task<ServiceResult<SharingTokenDto>> GetSharingToken(string token)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await GetSharingTokenCore(token);
+            SharingServiceMetrics.RecordOperation("GetSharingToken", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<SharingTokenDto>> GetSharingTokenCore(string token)
         {
             try
             {
@@ -87,6 +105,14 @@ namespace SharingService.Services
 
         public async Task<ServiceResult<bool>> RevokeSharingToken(string token, int userId)
         {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await RevokeSharingTokenCore(token, userId);
+            SharingServiceMetrics.RecordOperation("RevokeSharingToken", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> RevokeSharingTokenCore(string token, int userId)
+        {
             try
             {
                 var sharingToken = await _repository.GetByTokenAsync(token);
@@ -114,6 +140,14 @@ namespace SharingService.Services
         }
 
         public async Task<ServiceResult<bool>> ValidateSharingToken(ValidateSharingTokenDto dto)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await ValidateSharingTokenCore(dto);
+            SharingServiceMetrics.RecordOperation("ValidateSharingToken", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> ValidateSharingTokenCore(ValidateSharingTokenDto dto)
         {
             try
             {

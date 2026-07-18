@@ -7,6 +7,8 @@ using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using Shared.Common;
 using Shared.DTOs.User;
 using Shared.Interfaces;
@@ -14,6 +16,7 @@ using System.Fabric;
 using System.Text.Json;
 using UserService.DbContext;
 using UserService.Interfaces;
+using UserService.Observability;
 using UserService.Repositories;
 using UserService.Services;
 
@@ -145,12 +148,23 @@ namespace UserService
                             name: "UsersDb",
                             tags: new[] { "db", "sql", "ready" });
 
+                    // Application Metrics: custom business metrike (UserServiceMetrics) + .NET runtime
+                    // metrike, izlozene u Prometheus formatu na /metrics (isti Kestrel listener kao /health).
+                    builder.Services.AddOpenTelemetry()
+                        .ConfigureResource(resource => resource.AddService(serviceName: "UserService"))
+                        .WithMetrics(metrics => metrics
+                            .AddMeter(UserServiceMetrics.MeterName)
+                            .AddRuntimeInstrumentation()
+                            .AddPrometheusExporter());
+
                     var app = builder.Build();
 
                     app.MapHealthChecks("/health", new HealthCheckOptions
                     {
                         ResponseWriter = WriteHealthCheckResponse
                     });
+
+                    app.MapPrometheusScrapingEndpoint("/metrics");
 
                     return app;
                 }), "HealthEndpoint"));

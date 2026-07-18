@@ -1,0 +1,35 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 15s
+
+# Prometheus radi u kontejneru, dok TravelPlannerApp servisi rade kao Windows procesi
+# na host masini (Service Fabric lokalni klaster). "host.docker.internal" je poseban
+# DNS naziv koji Docker Desktop (Windows/Mac) automatski razresava na IP host masine.
+scrape_configs:
+  - job_name: "webapi-service"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["host.docker.internal:7001"]
+        labels:
+          service: "WebApiService"
+
+  - job_name: "user-service"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["host.docker.internal:7011"]
+        labels:
+          service: "UserService"
+
+  - job_name: "travel-service"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["host.docker.internal:7012"]
+        labels:
+          service: "TravelService"
+
+  - job_name: "sharing-service"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["host.docker.internal:7013"]
+        labels:
+          service: "SharingService"

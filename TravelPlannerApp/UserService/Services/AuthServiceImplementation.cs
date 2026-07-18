@@ -3,6 +3,8 @@ using Shared.DTOs.User;
 using Shared.Enums;
 using UserService.Interfaces;
 using UserService.Models;
+using UserService.Observability;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace UserService.Services
 {
@@ -18,6 +20,14 @@ namespace UserService.Services
         }
 
         public async Task<ServiceResult<AuthResponseDto>> Register(RegisterRequestDto request)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await RegisterCore(request);
+            UserServiceMetrics.RecordOperation("Register", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<AuthResponseDto>> RegisterCore(RegisterRequestDto request)
         {
             try
             {
@@ -70,6 +80,14 @@ namespace UserService.Services
         }
 
         public async Task<ServiceResult<AuthResponseDto>> Login(LoginRequestDto request)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await LoginCore(request);
+            UserServiceMetrics.RecordOperation("Login", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<AuthResponseDto>> LoginCore(LoginRequestDto request)
         {
             try
             {

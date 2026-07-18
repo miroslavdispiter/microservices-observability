@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using TravelService.Interfaces;
 using TravelService.Models;
+using TravelService.Observability;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace TravelService.Services
 {
@@ -24,6 +26,14 @@ namespace TravelService.Services
         }
 
         public async Task<ServiceResult<ActivityDto>> CreateActivity(int travelPlanId, CreateActivityDto dto)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await CreateActivityCore(travelPlanId, dto);
+            TravelServiceMetrics.RecordOperation("Activity", "Create", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<ActivityDto>> CreateActivityCore(int travelPlanId, CreateActivityDto dto)
         {
             var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
@@ -165,6 +175,14 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<bool>> UpdateActivity(int id, CreateActivityDto dto)
         {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await UpdateActivityCore(id, dto);
+            TravelServiceMetrics.RecordOperation("Activity", "Update", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> UpdateActivityCore(int id, CreateActivityDto dto)
+        {
             var activity = await _activityRepo.GetById(id);
 
             if (activity == null)
@@ -195,6 +213,14 @@ namespace TravelService.Services
         }
 
         public async Task<ServiceResult<bool>> DeleteActivity(int id)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await DeleteActivityCore(id);
+            TravelServiceMetrics.RecordOperation("Activity", "Delete", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> DeleteActivityCore(int id)
         {
             var activity = await _activityRepo.GetById(id);
 

@@ -1,0 +1,47 @@
+# Application Metrics + Grafana observability stack za TravelPlannerApp.
+#
+# Mikroservisi (WebApiService, UserService, TravelService, SharingService) i dalje rade
+# kao Service Fabric aplikacija na lokalnom klasteru (Visual Studio -> F5), u skladu sa
+# preporukom mentora. Ovaj docker-compose stack pokrece SAMO alate za observability
+# (Prometheus + Grafana) koji sa host masine skrejpuju /metrics endpointe servisa.
+#
+# Pokretanje:
+#   1. Pokrenuti TravelPlannerApp Service Fabric aplikaciju iz Visual Studio (F5).
+#   2. cd observability
+#   3. docker compose up -d
+#   4. Prometheus:  http://localhost:9090
+#      Grafana:     http://localhost:3001  (admin / admin)
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: travelplanner-prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: travelplanner-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  grafana-data:

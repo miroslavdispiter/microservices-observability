@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using TravelService.Interfaces;
 using TravelService.Models;
+using TravelService.Observability;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace TravelService.Services
 {
@@ -24,6 +26,14 @@ namespace TravelService.Services
         }
 
         public async Task<ServiceResult<ChecklistItemDto>> CreateChecklistItem(int travelPlanId, CreateChecklistItemDto dto)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await CreateChecklistItemCore(travelPlanId, dto);
+            TravelServiceMetrics.RecordOperation("ChecklistItem", "Create", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<ChecklistItemDto>> CreateChecklistItemCore(int travelPlanId, CreateChecklistItemDto dto)
         {
             var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
@@ -99,6 +109,14 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<bool>> UpdateChecklistItem(int id, CreateChecklistItemDto dto)
         {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await UpdateChecklistItemCore(id, dto);
+            TravelServiceMetrics.RecordOperation("ChecklistItem", "Update", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> UpdateChecklistItemCore(int id, CreateChecklistItemDto dto)
+        {
             var item = await _checklistRepo.GetById(id);
 
             if (item == null)
@@ -121,6 +139,14 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<bool>> ToggleChecklistItem(int id)
         {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await ToggleChecklistItemCore(id);
+            TravelServiceMetrics.RecordOperation("ChecklistItem", "Toggle", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> ToggleChecklistItemCore(int id)
+        {
             var item = await _checklistRepo.GetById(id);
 
             if (item == null)
@@ -134,6 +160,14 @@ namespace TravelService.Services
         }
 
         public async Task<ServiceResult<bool>> DeleteChecklistItem(int id)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await DeleteChecklistItemCore(id);
+            TravelServiceMetrics.RecordOperation("ChecklistItem", "Delete", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> DeleteChecklistItemCore(int id)
         {
             var item = await _checklistRepo.GetById(id);
 

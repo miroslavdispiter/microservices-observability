@@ -3,6 +3,8 @@ using Shared.DTOs.Destination;
 using Shared.Interfaces;
 using TravelService.Interfaces;
 using TravelService.Models;
+using TravelService.Observability;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace TravelService.Services
 {
@@ -20,6 +22,14 @@ namespace TravelService.Services
         }
 
         public async Task<ServiceResult<DestinationDto>> CreateDestination(int travelPlanId, CreateDestinationDto dto)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await CreateDestinationCore(travelPlanId, dto);
+            TravelServiceMetrics.RecordOperation("Destination", "Create", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<DestinationDto>> CreateDestinationCore(int travelPlanId, CreateDestinationDto dto)
         {
             var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
@@ -99,6 +109,14 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<bool>> UpdateDestination(int id, CreateDestinationDto dto)
         {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await UpdateDestinationCore(id, dto);
+            TravelServiceMetrics.RecordOperation("Destination", "Update", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> UpdateDestinationCore(int id, CreateDestinationDto dto)
+        {
             var destination = await _destinationRepo.GetById(id);
 
             if (destination == null)
@@ -124,6 +142,14 @@ namespace TravelService.Services
         }
 
         public async Task<ServiceResult<bool>> DeleteDestination(int id)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await DeleteDestinationCore(id);
+            TravelServiceMetrics.RecordOperation("Destination", "Delete", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> DeleteDestinationCore(int id)
         {
             var destination = await _destinationRepo.GetById(id);
 

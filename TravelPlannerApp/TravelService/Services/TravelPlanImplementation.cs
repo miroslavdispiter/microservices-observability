@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using TravelService.Interfaces;
 using TravelService.Models;
+using TravelService.Observability;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace TravelService.Services
 {
@@ -20,6 +22,14 @@ namespace TravelService.Services
         }
 
         public async Task<ServiceResult<TravelPlanDto>> Create(int userId, CreateTravelPlanDto dto)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await CreateCore(userId, dto);
+            TravelServiceMetrics.RecordOperation("TravelPlan", "Create", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<TravelPlanDto>> CreateCore(int userId, CreateTravelPlanDto dto)
         {
             try
             {
@@ -112,6 +122,14 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<bool>> Update(int id, CreateTravelPlanDto dto)
         {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await UpdateCore(id, dto);
+            TravelServiceMetrics.RecordOperation("TravelPlan", "Update", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> UpdateCore(int id, CreateTravelPlanDto dto)
+        {
             try
             {
                 var plan = await _repository.GetByIdAsync(id);
@@ -140,6 +158,14 @@ namespace TravelService.Services
         }
 
         public async Task<ServiceResult<bool>> Delete(int id)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await DeleteCore(id);
+            TravelServiceMetrics.RecordOperation("TravelPlan", "Delete", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> DeleteCore(int id)
         {
             try
             {
@@ -181,6 +207,14 @@ namespace TravelService.Services
         }
 
         public async Task<ServiceResult<bool>> DeleteByUserId(int userId)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await DeleteByUserIdCore(userId);
+            TravelServiceMetrics.RecordOperation("TravelPlan", "DeleteByUserId", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> DeleteByUserIdCore(int userId)
         {
             try
             {

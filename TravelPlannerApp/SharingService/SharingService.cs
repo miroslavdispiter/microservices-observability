@@ -5,10 +5,13 @@ using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using Shared.Common;
 using Shared.DTOs.Sharing;
 using Shared.Interfaces;
 using SharingService.HealthChecks;
+using SharingService.Observability;
 using SharingService.Repositories;
 using SharingService.Services;
 using System;
@@ -82,12 +85,23 @@ namespace SharingService
                             "SharingService-State",
                             tags: new[] { "state", "ready" });
 
+                    // Application Metrics: custom business metrike (SharingServiceMetrics) + .NET runtime
+                    // metrike, izlozene u Prometheus formatu na /metrics (isti Kestrel listener kao /health).
+                    builder.Services.AddOpenTelemetry()
+                        .ConfigureResource(resource => resource.AddService(serviceName: "SharingService"))
+                        .WithMetrics(metrics => metrics
+                            .AddMeter(SharingServiceMetrics.MeterName)
+                            .AddRuntimeInstrumentation()
+                            .AddPrometheusExporter());
+
                     var app = builder.Build();
 
                     app.MapHealthChecks("/health", new HealthCheckOptions
                     {
                         ResponseWriter = WriteHealthCheckResponse
                     });
+
+                    app.MapPrometheusScrapingEndpoint("/metrics");
 
                     return app;
                 }), "HealthEndpoint"));

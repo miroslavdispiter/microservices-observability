@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using TravelService.Interfaces;
 using TravelService.Models;
+using TravelService.Observability;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace TravelService.Services
 {
@@ -24,6 +26,14 @@ namespace TravelService.Services
         }
 
         public async Task<ServiceResult<ExpenseDto>> CreateExpense(int travelPlanId, CreateExpenseDto dto)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await CreateExpenseCore(travelPlanId, dto);
+            TravelServiceMetrics.RecordOperation("Expense", "Create", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<ExpenseDto>> CreateExpenseCore(int travelPlanId, CreateExpenseDto dto)
         {
             var travelPlan = await _travelPlanRepo.GetByIdAsync(travelPlanId);
             if (travelPlan == null)
@@ -131,6 +141,14 @@ namespace TravelService.Services
 
         public async Task<ServiceResult<bool>> UpdateExpense(int id, CreateExpenseDto dto)
         {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await UpdateExpenseCore(id, dto);
+            TravelServiceMetrics.RecordOperation("Expense", "Update", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> UpdateExpenseCore(int id, CreateExpenseDto dto)
+        {
             var expense = await _expenseRepo.GetById(id);
 
             if (expense == null)
@@ -159,6 +177,14 @@ namespace TravelService.Services
         }
 
         public async Task<ServiceResult<bool>> DeleteExpense(int id)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var result = await DeleteExpenseCore(id);
+            TravelServiceMetrics.RecordOperation("Expense", "Delete", result.Success, stopwatch.Elapsed.TotalMilliseconds);
+            return result;
+        }
+
+        private async Task<ServiceResult<bool>> DeleteExpenseCore(int id)
         {
             var expense = await _expenseRepo.GetById(id);
 

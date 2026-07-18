@@ -7,6 +7,8 @@ using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using Shared.Common;
 using Shared.DTOs.Activity;
 using Shared.DTOs.Checklist;
@@ -18,6 +20,7 @@ using System.Fabric;
 using System.Text.Json;
 using TravelService.DbContext;
 using TravelService.Interfaces;
+using TravelService.Observability;
 using TravelService.Repositories;
 using TravelService.Services;
 
@@ -410,12 +413,23 @@ namespace TravelService
                             name: "TravelDb",
                             tags: new[] { "db", "sql", "ready" });
 
+                    // Application Metrics: custom business metrike (TravelServiceMetrics) + .NET runtime
+                    // metrike, izlozene u Prometheus formatu na /metrics (isti Kestrel listener kao /health).
+                    builder.Services.AddOpenTelemetry()
+                        .ConfigureResource(resource => resource.AddService(serviceName: "TravelService"))
+                        .WithMetrics(metrics => metrics
+                            .AddMeter(TravelServiceMetrics.MeterName)
+                            .AddRuntimeInstrumentation()
+                            .AddPrometheusExporter());
+
                     var app = builder.Build();
 
                     app.MapHealthChecks("/health", new HealthCheckOptions
                     {
                         ResponseWriter = WriteHealthCheckResponse
                     });
+
+                    app.MapPrometheusScrapingEndpoint("/metrics");
 
                     return app;
                 }), "HealthEndpoint"));
