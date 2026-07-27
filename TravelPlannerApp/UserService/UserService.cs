@@ -43,6 +43,11 @@ namespace UserService
 
             _configuration = configuration;
 
+            // Distributed Tracing: TracerProvider mora da postoji PRE nego sto se otvori
+            // remoting listener, inace prvi dolazni pozivi ne bi bili instrumentirani.
+            // Konstruktor servisa je najranija tacka u zivotnom ciklusu koja to garantuje.
+            TracingSetup.Initialize(context);
+
             services.AddSingleton<IConfiguration>(configuration);
 
             services.AddDbContext<ApplicationDbContext>(options =>

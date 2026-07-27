@@ -31,7 +31,12 @@ namespace SharingService
 
         public SharingService(StatefulServiceContext context)
             : base(context)
-        { }
+        {
+            // Distributed Tracing: TracerProvider mora da postoji PRE nego sto se otvori
+            // remoting listener, inace prvi dolazni pozivi ne bi bili instrumentirani.
+            // Konstruktor servisa je najranija tacka u zivotnom ciklusu koja to garantuje.
+            TracingSetup.Initialize(context);
+        }
 
         public async Task<ServiceResult<SharingTokenDto>> CreateSharingToken(int userId, CreateSharingTokenDto dto)
         {

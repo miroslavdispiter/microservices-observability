@@ -47,6 +47,12 @@
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.3" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.1" />
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.15.3-beta.1" />
+    <!-- Distributed Tracing: OTLP exporter (salje span-ove Jaeger-u), instrumentacija
+         Service Fabric Remoting-a (propagacija W3C trace context-a) i SQL Client-a
+         (span-ovi za upite ka UsersDb bazi koje generise EF Core). -->
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.ServiceFabricRemoting" Version="1.15.1-beta.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.15.2" />
   </ItemGroup>
 
   <ItemGroup>

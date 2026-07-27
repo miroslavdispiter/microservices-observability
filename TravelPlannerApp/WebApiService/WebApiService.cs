@@ -7,6 +7,7 @@ using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using System.Fabric;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
@@ -86,15 +87,64 @@ namespace WebApiService
 
                         builder.Services.AddAuthorization();
 
-                        // Application Metrics: OpenTelemetry meter provider koji hvata standardne
-                        // ASP.NET Core HTTP metrike (broj zahteva, trajanje, aktivni zahtevi po ruti/statusu)
-                        // i .NET runtime metrike (GC, thread pool), i izlaze ih u Prometheus formatu na /metrics.
+                        // ============================================================================
+                        //  OBSERVABILITY: Application Metrics + Distributed Tracing
+                        // ============================================================================
                         builder.Services.AddOpenTelemetry()
-                            .ConfigureResource(resource => resource.AddService(serviceName: "WebApiService"))
+
+                            // Zajednicki resource atributi za metrike i trace-ove. service.name je
+                            // ono po cemu Jaeger grupise servise, a fabric atributi pokazuju na kom
+                            // cvoru klastera je span nastao.
+                            .ConfigureResource(resource => resource
+                                .AddService(
+                                    serviceName: "WebApiService",
+                                    serviceVersion: "1.0.0",
+                                    serviceInstanceId: serviceContext.NodeContext.NodeName)
+                                .AddAttributes(new[]
+                                {
+                                    new KeyValuePair<string, object>("service.fabric.application", serviceContext.CodePackageActivationContext.ApplicationName),
+                                    new KeyValuePair<string, object>("service.fabric.service", serviceContext.ServiceName.ToString()),
+                                    new KeyValuePair<string, object>("service.fabric.node", serviceContext.NodeContext.NodeName),
+                                }))
+
+                            // Application Metrics: standardne ASP.NET Core HTTP metrike (broj zahteva,
+                            // trajanje, aktivni zahtevi po ruti/statusu) i .NET runtime metrike
+                            // (GC, thread pool), izlozene u Prometheus formatu na /metrics.
                             .WithMetrics(metrics => metrics
                                 .AddAspNetCoreInstrumentation()
                                 .AddRuntimeInstrumentation()
-                                .AddPrometheusExporter());
+                                .AddPrometheusExporter())
+
+                            // Distributed Tracing: WebApiService je ulazna tacka sistema, pa se ovde
+                            // rodi root span svakog trace-a. Taj span se zatim, kroz instrumentaciju
+                            // Service Fabric Remoting-a, prenosi do UserService/TravelService/SharingService.
+                            .WithTracing(tracing => tracing
+                                .AddAspNetCoreInstrumentation(options =>
+                                {
+                                    // Bez ovog filtera bi Jaeger bio zatrpan: Prometheus skrejpuje
+                                    // /metrics na svakih 5 sekundi, a /health se poziva jos cesce.
+                                    // Te rute su infrastrukturne i nisu deo korisnickog toka.
+                                    options.Filter = httpContext =>
+                                        !httpContext.Request.Path.StartsWithSegments("/metrics")
+                                        && !httpContext.Request.Path.StartsWithSegments("/health");
+
+                                    // Exception tracking: neuhvacen izuzetak se upisuje u span
+                                    // kao ActivityEvent sa stack trace-om.
+                                    options.RecordException = true;
+                                })
+
+                                // Klijentski span-ovi za odlazne remoting pozive + ubacivanje
+                                // W3C trace context-a u zaglavlja remoting poruke.
+                                .AddServiceFabricRemotingInstrumentation(options =>
+                                {
+                                    options.AddExceptionAtClient = true;
+                                    options.AddExceptionAtServer = true;
+                                })
+
+                                // Izvoz preko OTLP protokola ka Jaeger-u. Endpoint i protokol se
+                                // citaju iz OTEL_EXPORTER_OTLP_ENDPOINT / OTEL_EXPORTER_OTLP_PROTOCOL
+                                // promenljivih okruzenja definisanih u ServiceManifest.xml.
+                                .AddOtlpExporter());
 
                         // Health checks: osnovni gateway self-check + provera dostupnosti
                         // UserService, TravelService i SharingService preko njihovih /health endpointa

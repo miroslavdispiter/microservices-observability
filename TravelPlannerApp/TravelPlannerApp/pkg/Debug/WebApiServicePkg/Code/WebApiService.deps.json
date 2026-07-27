@@ -14,10 +14,12 @@
           "Microsoft.IdentityModel.Tokens": "8.18.0",
           "Microsoft.ServiceFabric.AspNetCore.Kestrel": "8.4.268",
           "Microsoft.ServiceFabric.Services.Remoting": "8.4.268",
+          "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.3",
           "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.15.3-beta.1",
           "OpenTelemetry.Extensions.Hosting": "1.15.3",
           "OpenTelemetry.Instrumentation.AspNetCore": "1.15.2",
           "OpenTelemetry.Instrumentation.Runtime": "1.15.1",
+          "OpenTelemetry.Instrumentation.ServiceFabricRemoting": "1.15.1-beta.1",
           "Shared": "1.0.0",
           "Swashbuckle.AspNetCore": "6.6.2",
           "System.IdentityModel.Tokens.Jwt": "8.18.0"
@@ -61,9 +63,15 @@
           "Microsoft.Extensions.Primitives": "8.0.0"
         }
       },
-      "Microsoft.Extensions.Configuration.Binder/8.0.0": {
+      "Microsoft.Extensions.Configuration.Binder/8.0.2": {
         "dependencies": {
           "Microsoft.Extensions.Configuration.Abstractions": "8.0.0"
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.Configuration.Binder.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.724.31311"
+          }
         }
       },
       "Microsoft.Extensions.DependencyInjection/8.0.0": {
@@ -172,7 +180,7 @@
         "dependencies": {
           "Microsoft.Extensions.Configuration": "8.0.0",
           "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
+          "Microsoft.Extensions.Configuration.Binder": "8.0.2",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
           "Microsoft.Extensions.Logging": "8.0.0",
           "Microsoft.Extensions.Logging.Abstractions": "8.0.2",
@@ -195,7 +203,7 @@
       "Microsoft.Extensions.Options.ConfigurationExtensions/8.0.0": {
         "dependencies": {
           "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "8.0.0",
+          "Microsoft.Extensions.Configuration.Binder": "8.0.2",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
           "Microsoft.Extensions.Options": "8.0.2",
           "Microsoft.Extensions.Primitives": "8.0.0"
@@ -350,6 +358,18 @@
             "assetType": "runtime",
             "assemblyVersion": "0.0.0.0",
             "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Microsoft.ServiceFabric.Actors/7.1.2448": {
+        "dependencies": {
+          "Microsoft.ServiceFabric.Diagnostics.Internal": "8.4.268",
+          "Microsoft.ServiceFabric.Services.Remoting": "8.4.268"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.ServiceFabric.Actors.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "7.1.4.0"
           }
         }
       },
@@ -566,6 +586,18 @@
           }
         }
       },
+      "OpenTelemetry.Exporter.OpenTelemetryProtocol/1.15.3": {
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Binder": "8.0.2",
+          "OpenTelemetry": "1.15.3"
+        },
+        "runtime": {
+          "lib/net8.0/OpenTelemetry.Exporter.OpenTelemetryProtocol.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.15.3.2017"
+          }
+        }
+      },
       "OpenTelemetry.Exporter.Prometheus.AspNetCore/1.15.3-beta.1": {
         "dependencies": {
           "OpenTelemetry": "1.15.3"
@@ -608,6 +640,20 @@
           "lib/net8.0/OpenTelemetry.Instrumentation.Runtime.dll": {
             "assemblyVersion": "1.15.1.1029",
             "fileVersion": "1.15.1.1029"
+          }
+        }
+      },
+      "OpenTelemetry.Instrumentation.ServiceFabricRemoting/1.15.1-beta.1": {
+        "dependencies": {
+          "Microsoft.Extensions.Options": "8.0.2",
+          "Microsoft.ServiceFabric.Actors": "7.1.2448",
+          "Microsoft.ServiceFabric.Services.Remoting": "8.4.268",
+          "OpenTelemetry.Api.ProviderBuilderExtensions": "1.15.3"
+        },
+        "runtime": {
+          "lib/net8.0/OpenTelemetry.Instrumentation.ServiceFabricRemoting.dll": {
+            "assemblyVersion": "1.15.1.1030",
+            "fileVersion": "1.15.1.1030"
           }
         }
       },
@@ -721,12 +767,12 @@
       "path": "microsoft.extensions.configuration.abstractions/8.0.0",
       "hashPath": "microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512"
     },
-    "Microsoft.Extensions.Configuration.Binder/8.0.0": {
+    "Microsoft.Extensions.Configuration.Binder/8.0.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-mBMoXLsr5s1y2zOHWmKsE9veDcx8h1x/c3rz4baEdQKTeDcmQAPNbB54Pi/lhFO3K431eEq6PFbMgLaa6PHFfA==",
-      "path": "microsoft.extensions.configuration.binder/8.0.0",
-      "hashPath": "microsoft.extensions.configuration.binder.8.0.0.nupkg.sha512"
+      "sha512": "sha512-7IQhGK+wjyGrNsPBjJcZwWAr+Wf6D4+TwOptUt77bWtgNkiV8tDEbhFS+dDamtQFZ2X7kWG9m71iZQRj2x3zgQ==",
+      "path": "microsoft.extensions.configuration.binder/8.0.2",
+      "hashPath": "microsoft.extensions.configuration.binder.8.0.2.nupkg.sha512"
     },
     "Microsoft.Extensions.DependencyInjection/8.0.0": {
       "type": "package",
@@ -889,6 +935,13 @@
       "path": "microsoft.servicefabric/11.4.268",
       "hashPath": "microsoft.servicefabric.11.4.268.nupkg.sha512"
     },
+    "Microsoft.ServiceFabric.Actors/7.1.2448": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-kgy6saEcp3/ZFtqoCAPK/Z3mfP4Cfy9qb0Boisb1hw8it3w5QTclQdd1xpqkPE4XHEQXEtYb/831vRERLWbwfQ==",
+      "path": "microsoft.servicefabric.actors/7.1.2448",
+      "hashPath": "microsoft.servicefabric.actors.7.1.2448.nupkg.sha512"
+    },
     "Microsoft.ServiceFabric.AspNetCore.Abstractions/8.4.268": {
       "type": "package",
       "serviceable": true,
@@ -973,6 +1026,13 @@
       "path": "opentelemetry.api.providerbuilderextensions/1.15.3",
       "hashPath": "opentelemetry.api.providerbuilderextensions.1.15.3.nupkg.sha512"
     },
+    "OpenTelemetry.Exporter.OpenTelemetryProtocol/1.15.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-FEXJepcseTGbATiCkUfP7ipoFEYYfl/0UmmUwi0KxCPg9PaUA8ab2P1LGopK+/HExasJ1ZutFhZrN6WvUIR23g==",
+      "path": "opentelemetry.exporter.opentelemetryprotocol/1.15.3",
+      "hashPath": "opentelemetry.exporter.opentelemetryprotocol.1.15.3.nupkg.sha512"
+    },
     "OpenTelemetry.Exporter.Prometheus.AspNetCore/1.15.3-beta.1": {
       "type": "package",
       "serviceable": true,
@@ -1000,6 +1060,13 @@
       "sha512": "sha512-cpPwlUT5HXcLGPaIgsbSy0W9eFYAPGVbTP1p8/uyQ4Osvf5BJuPpEXE7crL09SmEd44r0DGNKDtsqxaAz0HxQw==",
       "path": "opentelemetry.instrumentation.runtime/1.15.1",
       "hashPath": "opentelemetry.instrumentation.runtime.1.15.1.nupkg.sha512"
+    },
+    "OpenTelemetry.Instrumentation.ServiceFabricRemoting/1.15.1-beta.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-PYFC3HYiEqh9urILK22wNsw8Br5ZJMV/0/082hvG++oAI8ZE6/m7mVXauOgpfspSQjW4a83YoKGpxqWea3weBw==",
+      "path": "opentelemetry.instrumentation.servicefabricremoting/1.15.1-beta.1",
+      "hashPath": "opentelemetry.instrumentation.servicefabricremoting.1.15.1-beta.1.nupkg.sha512"
     },
     "Swashbuckle.AspNetCore/6.6.2": {
       "type": "package",

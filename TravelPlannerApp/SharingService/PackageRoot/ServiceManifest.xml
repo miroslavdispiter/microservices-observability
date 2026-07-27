@@ -17,6 +17,14 @@
         <Program>SharingService.exe</Program>
       </ExeHost>
     </EntryPoint>
+
+    <!-- Distributed Tracing: standardne OpenTelemetry promenljive okruzenja.
+         OTLP exporter ih cita automatski, pa se endpoint Jaeger-a ne mora hardkodovati u kodu.
+         4317 je OTLP/gRPC port koji Jaeger container publikuje na host masinu. -->
+    <EnvironmentVariables>
+      <EnvironmentVariable Name="OTEL_EXPORTER_OTLP_ENDPOINT" Value="http://localhost:4317" />
+      <EnvironmentVariable Name="OTEL_EXPORTER_OTLP_PROTOCOL" Value="grpc" />
+    </EnvironmentVariables>
   </CodePackage>
 
   <!-- Config package is the contents of the Config directory under PackageRoot that contains an 
@@ -29,6 +37,11 @@
            listen. Please note that if your service is partitioned, this port is shared with 
            replicas of different partitions that are placed in your code. -->
       <Endpoint Name="ServiceEndpoint" />
+
+      <!-- Endpoint resurs za V2 remoting listener. Instrumentirani remoting provider
+           (TraceContextEnrichedServiceRemotingProvider) podrazumevano trazi resurs pod
+           ovim imenom; port dodeljuje Service Fabric dinamicki iz opsega aplikacije. -->
+      <Endpoint Name="ServiceEndpointV2" />
 
       <!-- This endpoint is used by the replicator for replicating the state of your service.
            This endpoint is configured through a ReplicatorSettings config section in the Settings.xml

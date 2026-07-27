@@ -1,0 +1,184 @@
+{
+  "id": null,
+  "uid": "travelplanner-distributed-tracing",
+  "title": "TravelPlannerApp - Distributed Tracing",
+  "description": "Objedinjeni prikaz distribuiranog tracinga: trace-ovi iz Jaeger-a (OpenTelemetry preko Service Fabric Remoting-a) povezani sa RED metrikama iz Prometheus-a. Klik na traceID otvara vremensku osu celog zahteva kroz WebApiService -> UserService/TravelService/SharingService -> SQL.",
+  "tags": ["travelplannerapp", "observability", "distributed-tracing", "jaeger"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "label": "Servis",
+        "type": "custom",
+        "query": "WebApiService,UserService,TravelService,SharingService",
+        "current": { "text": "WebApiService", "value": "WebApiService" },
+        "options": [
+          { "text": "WebApiService", "value": "WebApiService", "selected": true },
+          { "text": "UserService", "value": "UserService", "selected": false },
+          { "text": "TravelService", "value": "TravelService", "selected": false },
+          { "text": "SharingService", "value": "SharingService", "selected": false }
+        ],
+        "includeAll": false,
+        "multi": false
+      },
+      {
+        "name": "minDuration",
+        "label": "Min. trajanje (spor zahtev)",
+        "type": "custom",
+        "query": "100ms,250ms,500ms,1s,2s",
+        "current": { "text": "250ms", "value": "250ms" },
+        "options": [
+          { "text": "100ms", "value": "100ms", "selected": false },
+          { "text": "250ms", "value": "250ms", "selected": true },
+          { "text": "500ms", "value": "500ms", "selected": false },
+          { "text": "1s", "value": "1s", "selected": false },
+          { "text": "2s", "value": "2s", "selected": false }
+        ],
+        "includeAll": false,
+        "multi": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "Kako se cita ovaj dashboard",
+      "gridPos": { "h": 5, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "Svaki HTTP zahtev koji stigne na **WebApiService** dobija jedinstven `trace-id`. Taj identifikator se, kroz instrumentaciju **Service Fabric Remoting-a**, prenosi u zaglavljima remoting poruke do pozvanog servisa, koji svoj rad belezi kao *child span*. Zbog toga se ceo put jednog korisnickog zahteva - gateway, poslovni servis i SQL upit - vidi kao jedan trace.\n\n**Klik na `traceID` u tabelama ispod** otvara vremensku osu (waterfall) tog zahteva. Iz otvorenog span-a se preko *Trace to metrics* linkova skace na RED metrike istog servisa, cime se povezuju pojedinacan slucaj i agregatna slika."
+      }
+    },
+    {
+      "id": 2,
+      "type": "row",
+      "title": "Trace-ovi (Jaeger)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Poslednji trace-ovi - $service",
+      "description": "Rezultat pretrage Jaeger-a za izabrani servis. Kolona traceID je link koji otvara detaljan prikaz trace-a.",
+      "datasource": { "type": "jaeger", "uid": "jaeger" },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 6 },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "jaeger", "uid": "jaeger" },
+          "queryType": "search",
+          "service": "$service",
+          "limit": 25
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Start time", "desc": true }]
+      }
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "Spori trace-ovi - $service (trajanje > $minDuration)",
+      "description": "Ista pretraga, ali filtrirana po minimalnom trajanju. Ovo je polazna tacka za analizu uskih grla: otvaranjem trace-a se vidi da li vreme odlazi na remoting poziv, na poslovnu logiku ili na SQL upit.",
+      "datasource": { "type": "jaeger", "uid": "jaeger" },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 6 },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "jaeger", "uid": "jaeger" },
+          "queryType": "search",
+          "service": "$service",
+          "minDuration": "$minDuration",
+          "limit": 25
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Duration", "desc": true }]
+      }
+    },
+    {
+      "id": 5,
+      "type": "row",
+      "title": "Korelacija sa metrikama (Prometheus)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Gateway - P95 latencija po ruti",
+      "description": "Kada ovaj grafik skoci, spori trace-ovi u tabeli iznad pokazuju konkretne zahteve koji su to izazvali.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 17 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_request_duration_seconds_bucket{job=\"webapi-service\"}[5m])) by (le, http_route))",
+          "legendFormat": "{{http_route}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 5 } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Gateway - request rate po ruti i statusu",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 17 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"webapi-service\"}[1m])) by (http_route, http_response_status_code)",
+          "legendFormat": "{{http_route}} [{{http_response_status_code}}]"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 5 } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Poslovni servisi - trajanje operacija (P95, custom metrike)",
+      "description": "Custom business metrike (user_service_*, travel_service_*, sharing_service_*) koje servisi salju uz standardne runtime metrike. Sluze kao agregatna potvrda onoga sto se u pojedinacnom trace-u vidi kao dugacak span.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 25 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum(rate(user_service_operation_duration_ms_bucket[5m])) by (le, operation))",
+          "legendFormat": "UserService - {{operation}}"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum(rate(travel_service_operation_duration_ms_bucket[5m])) by (le, operation))",
+          "legendFormat": "TravelService - {{operation}}"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.95, sum(rate(sharing_service_operation_duration_ms_bucket[5m])) by (le, operation))",
+          "legendFormat": "SharingService - {{operation}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ms", "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 5 } },
+        "overrides": []
+      }
+    }
+  ]
+}

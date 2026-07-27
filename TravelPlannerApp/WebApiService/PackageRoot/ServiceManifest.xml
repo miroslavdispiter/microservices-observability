@@ -20,6 +20,11 @@
     </EntryPoint>
     <EnvironmentVariables>
       <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value=""/>
+      <!-- Distributed Tracing: standardne OpenTelemetry promenljive okruzenja.
+           OTLP exporter ih cita automatski, pa se endpoint Jaeger-a ne mora hardkodovati u kodu.
+           4317 je OTLP/gRPC port koji Jaeger container publikuje na host masinu. -->
+      <EnvironmentVariable Name="OTEL_EXPORTER_OTLP_ENDPOINT" Value="http://localhost:4317"/>
+      <EnvironmentVariable Name="OTEL_EXPORTER_OTLP_PROTOCOL" Value="grpc"/>
     </EnvironmentVariables>
   </CodePackage>
 

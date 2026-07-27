@@ -1,10 +1,65 @@
 apiVersion: 1
 
+# Datasource-i se u Grafanu ubacuju automatski (provisioning), pa se nista ne podesava
+# rucno kroz UI - ceo observability stack se podize jednom komandom i uvek je isti.
+
 datasources:
+  # ---------------------------------------------------------------------------
+  # Application Metrics
+  # ---------------------------------------------------------------------------
   - name: Prometheus
     uid: prometheus
     type: prometheus
     access: proxy
+    # Naziv servisa iz docker-compose-a; Grafana i Prometheus su u istoj Docker mrezi.
     url: http://prometheus:9090
     isDefault: true
     editable: true
+
+  # ---------------------------------------------------------------------------
+  # Distributed Tracing
+  # ---------------------------------------------------------------------------
+  - name: Jaeger
+    uid: jaeger
+    type: jaeger
+    access: proxy
+    url: http://jaeger:16686
+    editable: true
+    jsonData:
+      # ---------------------------------------------------------------------
+      # Trace -> Metrics: iz otvorenog span-a se jednim klikom skace na RED
+      # metrike (Rate / Errors / Duration) istog servisa u Prometheus-u.
+      # Ovo je ono sto od Grafane pravi objedinjeni prikaz umesto dva odvojena
+      # alata: trace pokazuje GDE je problem, metrika pokazuje KOLIKO je cest.
+      # ---------------------------------------------------------------------
+      tracesToMetrics:
+        datasourceUid: prometheus
+        # Vrednost resource atributa service.name iz span-a se preslikava na
+        # Prometheus labelu "service" definisanu u prometheus.yml.
+        tags:
+          - key: "service.name"
+            value: "service"
+        queries:
+          # HTTP metrike postoje samo na gateway-u (WebApiService), jer samo on ima
+          # ASP.NET Core saobracaj - poslovni servisi se pozivaju preko remoting-a.
+          - name: "Gateway: request rate (req/s)"
+            query: "sum(rate(http_server_request_duration_seconds_count{$$__tags}[5m]))"
+          - name: "Gateway: error rate (5xx)"
+            query: "sum(rate(http_server_request_duration_seconds_count{$$__tags, http_response_status_code=~\"5..\"}[5m]))"
+          - name: "Gateway: P95 latencija (s)"
+            query: "histogram_quantile(0.95, sum(rate(http_server_request_duration_seconds_bucket{$$__tags}[5m])) by (le))"
+          # Ova radi za sva cetiri servisa - brza provera da li je servis uopste
+          # bio dostupan Prometheus-u u trenutku kada je trace nastao.
+          - name: "Dostupnost servisa (up)"
+            query: "up{$$__tags}"
+
+      # Prikaz grafa zavisnosti servisa (Node Graph) unutar Grafane, pored
+      # klasicnog waterfall prikaza span-ova.
+      nodeGraph:
+        enabled: true
+
+      # Vremenski prozor koji Grafana koristi kada trazi trace po ID-u.
+      traceQuery:
+        timeShiftEnabled: true
+        spanStartTimeShift: "-30m"
+        spanEndTimeShift: "30m"

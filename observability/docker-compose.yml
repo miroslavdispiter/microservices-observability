@@ -1,15 +1,24 @@
-# Application Metrics + Grafana observability stack za TravelPlannerApp.
+# Observability stack za TravelPlannerApp: Application Metrics + Distributed Tracing.
 #
 # Mikroservisi (WebApiService, UserService, TravelService, SharingService) i dalje rade
 # kao Service Fabric aplikacija na lokalnom klasteru (Visual Studio -> F5), u skladu sa
-# preporukom mentora. Ovaj docker-compose stack pokrece SAMO alate za observability
-# (Prometheus + Grafana) koji sa host masine skrejpuju /metrics endpointe servisa.
+# preporukom mentora. Ovaj docker-compose stack pokrece SAMO alate za observability:
+#
+#   Prometheus  - SKREJPUJE (pull) /metrics endpointe servisa sa host masine
+#   Jaeger      - PRIMA (push) OTLP span-ove koje servisi salju na localhost:4317
+#   Grafana     - objedinjeni prikaz: metrike iz Prometheus-a + trace-ovi iz Jaeger-a
+#
+# Obratiti paznju na suprotan smer komunikacije: metrike Prometheus povlaci sam, dok
+# trace-ove servisi guraju ka Jaeger-u. Zato Jaeger mora da bude pokrenut (ili barem
+# port 4317 dostupan) da bi span-ovi bili sacuvani - OTLP exporter u servisima tiho
+# odustaje ako ne uspe da se poveze i span-ovi se gube.
 #
 # Pokretanje:
-#   1. Pokrenuti TravelPlannerApp Service Fabric aplikaciju iz Visual Studio (F5).
-#   2. cd observability
-#   3. docker compose up -d
+#   1. cd observability
+#   2. docker compose up -d
+#   3. Pokrenuti TravelPlannerApp Service Fabric aplikaciju iz Visual Studio (F5).
 #   4. Prometheus:  http://localhost:9090
+#      Jaeger UI:   http://localhost:16686
 #      Grafana:     http://localhost:3001  (admin / admin)
 
 services:
@@ -23,6 +32,19 @@ services:
       - "--web.enable-lifecycle"
     ports:
       - "9090:9090"
+    restart: unless-stopped
+
+  # Distributed Tracing backend. Jedinstveni binarni image koji u jednom procesu sadrzi
+  # collector (prijem OTLP span-ova), skladiste i query/UI. Skladiste je in-memory -
+  # dovoljno za lokalni razvoj i demonstraciju, ali se trace-ovi gube pri restartu
+  # kontejnera. Jaeger v1 je van podrske od 31.12.2025, pa se koristi v2 linija.
+  jaeger:
+    image: jaegertracing/jaeger:2.20.0
+    container_name: travelplanner-jaeger
+    ports:
+      - "16686:16686"   # Jaeger UI i query API (Grafana ga koristi kao datasource)
+      - "4317:4317"     # OTLP/gRPC - ovde servisi salju span-ove
+      - "4318:4318"     # OTLP/HTTP - alternativa ako gRPC nije opcija
     restart: unless-stopped
 
   grafana:
@@ -41,6 +63,7 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
+      - jaeger
     restart: unless-stopped
 
 volumes:
